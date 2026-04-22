@@ -1,0 +1,1327 @@
+---
+title: 'Online Appendix to "Resistance is Not Futile: Rethinking Ethnicity, Tactics, and Outcomes in Civil Conflicts"'
+format:
+  pdf: 
+    toc: true
+editor: visual
+date: today
+---
+
+```{r packages, echo = FALSE, message=FALSE, warning=FALSE}
+library(dplyr)
+library(modelsummary)
+#library(pltesim)
+library(ggeffects)
+library(ggplot2)
+library(kableExtra)
+library(logistf)
+#library(plm)
+library(bife)
+library(sensemakr)
+```
+
+```{r import, include=FALSE}
+NAVCO_EGC_VDEM <- read.csv("EGC_CampYear_20250930.csv")
+NAVCO_EGC_VDEM$prim_meth <- factor(NAVCO_EGC_VDEM$prim_meth)
+
+```
+
+{{< pagebreak >}}
+
+## Data and Coding Rules
+
+This paper relies on a new dataset that links violent and nonviolent campaigns in the NAVCO 2.1 dataset to ethnic groups in the EPR 2017 dataset. It uses an approach similar to that employed by in the ACD2EPR dataset (Wucherpfennig et al. 2012). It also parallels the data collection processes of the Ethnic Groups in Contention dataset (Thurber 2018). But whereas the EGC dataset only collects data at the time of onset, this data includes all years of a campaign, thus capturing changes that occur over time during the course of the campaign. Additionally, it relies on the updated NAVCO 2.1 dataset (rather than 2.0). This extends the temporal range of the data and reflects other revisions that were made in the NAVCO update.
+
+In its raw structure, the dataset includes one row for each EPR ethnic group observed to be participating in given campaign-year. This data is then aggregated into a set of campaign-year measures for the analyses used in the study. Below, we describe the coding procedures used for the initial data collection process, the variables included in the base dataset, and the process used to aggregate measures at the campaign-year level.
+
+### Data collection process
+
+The first step of our data collection process is to identify which ethnic groups, as listed in the EPR dataset, are observably participating in a campaign. We parallel the concept of recruitment put forth by Wucherpfennig et al. (2012, p. 95), who code from which ethnic groups, if any, a particular rebel organization recruits fighters. We similarly set no specific numeric threshold of participation (an impossibility due to data limitations), but require that a significant enough number of an ethnic group's members participate such that their participation is observed and noted in the secondary literature. When campaigns include members from multiple ethnic groups, each ethnic group is identified.
+
+Reliably coding which groups participated in a campaign presents several challenges. Journalist and scholars writing about a given campaign might vary in the degree to which they focus on the ethnic composition of the movement. Furthermore, whether or not ethnicity is discussed might be affected by other factors such as the history of ethnic relations in the country, the visibility of ethnic differences, and whether or not ethnic rights were a specific goal or claim of the campaign. To mitigate these risks, we consulted multiple sources for each campaign, looked for unique and specific evidence of participation and of claims, and marked questionable coding decisions for review by multiple members of the research team.
+
+When an ethnic group is identified as participating in a campaign in a given year, it receives its own row in the dataset and its name and EPR ID are documented. Next, we code a `CLAIM` variable, which measures if the campaign states explicit political, economic, or social goals that are specific to that ethnic group. Again, we parallel ACD2EPR, which similarly codes whether a given rebel organization publicly announces that it is operating on behalf of the relevant ethnic group (Wucherpfennig et al. 2012, p. 95). Evidence of an ethnic claim often comes in the name of a campaign organization (e.g. "Tigray People's Liberation Front"), or from publicly stated platforms that reference the rights or grievances of a specific group.
+
+We follow the EGC dataset in coding one participating ethnic group for each campaign-year as making up a `PLURALITY` of participants.
+
+The case of the Arab Spring uprising in Syria (and subsequent turn to civil war) offers an example of how our coding system was applied and how it differs from prior schemes. From the secondary literature, we identify the presence of all three EPR ethnic groups within the uprising: Sunni Arabs, Allawi, and Druze. Sunni Arabs clearly made up the vast majority of participants, however the participation of other groups is frequently noted in the secondary literature and was even highlighted by resistance organizations (as part of a deliberate effort to present the movement as non-sectarian). We note that Sunni Arabs are the "plurality" group and that even though the movement sought to emphasize grievances that spanned sectarian affiliation, "ethnic claims" were present in the form of calls redress inequalities for Sunni Arabs.
+
+Prior coding schemes would attempt to classify the Arab Spring uprising in Syria as either "ethnic" or not on the basis of whether or not the movement and the regime were divided on the basis of ethnicity. It is not immediately clear how those approaches would code this case: was Druze representation within the uprising sufficiently large for it to be "non-ethnic"? In our dataset, we are able to show that three different ethnic groups are present in the campaign, one of them is included in political power while the other two were excluded, and one of them made ethnic claims. And with data on the specific groups participating in a campaign, we are able to bring in additional data from the EPR project, such as the demographic size of the campaign, whether it is settled in primarily urban or rural areas, and whether ethnic kin are present in a neighboring country.
+
+### Changes over time
+
+Our initial data collection usually began with attention to the first year of a campaign (benefiting from the data previously made available from the EGC dataset). We did not attempt to gather corroborating evidence for the presence or absence of ethnic groups in each and every year of a campaign. Rather, we looked for evidence within the secondary literature of changes in the ethnic composition of a campaign over time. Beyond this general examination, we identified years in which a) ACD2EPR coded changes in ethnic participation; b) NAVCO 2.1 coded a change in its ethnic diversity variable; and 3) NAVCO 2.1 coded the entrance of any new campaign organization. Any year identified on the above criteria received specific scrutiny, almost as if it were a discreet campaign. We also reassessed the presence of ethnic claims as well as which group represented a plurality of participants in these years. In the absence of evidence indicating a change in the ethnic characteristics of a campaign, we assumed that there were no changes from the previous year of the campaign.
+
+We observed 74 instances of changes in the ethnic composition of campaigns over time. Changes occurred in 38 different campaigns, nearly 10% of the 384 campaigns in the dataset. A full list of observed changes is included at the end of this Appendix. The most challenging cases of campaigns featuring changes in time came from long-running insurgencies in Myanmar. Over the span of more than half a century, multiple resistance organizations in Myanmar, often representing specific ethnic groups, have entered into and withdrawn from campaigns of mass resistance. The NAVCO dataset generally treats these as two continuous campaigns, one including the groups fighting for regime change, and the other groups seeking secession. To identify changes in the ethnic composition of the campaigns over time, we relied on NAVCO and EAC codings of the ethnic organizations participating in conflict in given years and used those to infer the ethnicity of the participants.
+
+| Variable Name   | Description                                                                                                  | Source    |
+|---------------|------------------------------------------|---------------|
+| `id`            | Campaign id from the NAVCO 2.1 Dataset                                                                       | NAVCO 2.1 |
+| `camp_name`     | Campaign name                                                                                                | NAVCO 2.1 |
+| `year`          | Year of campaign                                                                                             | NAVCO 2.1 |
+| `location`      | Country in which campaign occurred                                                                           | NAVCO 2.1 |
+| `loc_cow`       | Correlates of war country code for location                                                                  | NAVCO 2.1 |
+| `prim_meth`     | primary tactics used by campaign in given year: 1 = nonviolent; 0 = violent                                  | NAVCO 2.1 |
+| `camp_orgs`     | number of new campaign organizations present                                                                 | NAVCO 2.1 |
+| `div_ethnicity` | whether or not the campaign includes more than one ethnic group                                              | NAVCO 2.1 |
+| `div_religion`  | whether or not the campaign includes more than one religious group                                           | NAVCO 2.1 |
+| `EPR_GROUP`     | name of ethnic group (using EPR nomenclature) participating in the campaign in a given year                  | EGC 2.1   |
+| `EPR_ID`        | Combined country and ethnic group ID number from EPR system                                                  | EGC 2.1   |
+| `PARTICIPATION` | Whether or not ethnic group participates in campaign (always takes value of 1 in this format of the dataset) | EGC 2.1   |
+| `PRIMARY`       | Whether ethnic group makes up a plurality of participants in the campaign                                    | EGC 2.1   |
+| `CLAIM`         | Whether ethnic group makes an explicit ethnic political claim                                                | EGC 2.1   |
+| `SOURCES`       | Sources used in making coding determination                                                                  | EGC 2.1   |
+| `NOTES`         | Notes about coding decision                                                                                  | EGC 2.1   |
+
+: Variables in the EGC 2.1 Dataset {tbl-colwidths="\[20,60,20\]"}
+
+### Aggregating to the campaign-year level
+
+Our raw data identified EPR ethnic groups participating in given campaign-years of the NAVCO 2.1 dataset. It coded whether or not each participating group made ethnic claims and which constituted a plurality of participants. We were then able to use EPR data to pull in information on each participating group's access to political power. From this raw data at the campaign-year-group level, we created new measures to aggregate at the campaign-year level. The variables central to our main analyses include:
+
+-   `num_groups`: the total number of distinct EPR ethnic groups participating in a campaign in a given year.
+
+-   `Status3`: a three-level categorical variable indicating the power relationships among ethnic groups participating in the campaign. As described in the main text, the three levels are:
+
+    -   Incumbents: when all participating ethnic groups are coded by EPR as included/"ethnic groups in power (EGIP)" (that is, at the status of Junior Partner or higher)
+
+    -   Excludeds: when all participating ethnic groups are coded by EPR as excluded from political power
+
+    -   Mixed: when at least one participating ethnic group is coded as an ethnic group in power, and at least one is coded as excluded
+
+Some other campaign-year variables that we are able create from our EGC data and that we use in some supplemental analyses include:
+
+-   `prim_egip`: Binary variable indicating that the plurality group is an ethnic group in power. Most similar to variable used by Manekin and Mitts (2022).
+
+-   `prim_srpl`: A binary status variable indicating that the plurality group is a Senior Partner or greater. Most similar to variable used by Thurber (2018) and Pischedda (2020). In contrast to the `prim_egip` variable, a movement where the plurality group is of "Junior Partner" status in the EPR classification is coded as a 0 for this variable.
+
+-   `any_claim`: a dichotomous variable that takes the value of 1 when ANY participating ethnic group is coded as making an explicit ethnic claim
+
+-   `pop_share`: the sum percentage of the country population made up of the ethnic groups participating in the campaign
+
+-   `Majority`: whether the population share of of the campaign constitutes a demographic majority (i.e. \> .5)
+
+-   `prim_all_urb`: whether the primary ethnic group participating in a campaign is settled in urban areas
+
+-   `prim_tek`: whether the primary ethnic group participating in a campaign has transnational ethnic kin
+
+Returning to the example of Syria, we code the Arab Spring uprising as having 3 participating ethnic groups and as being of "Mixed" power status as it featured participation from both politically dominant as well as politically discriminated groups. The plurality group, "Sunni Arabs" was excluded, so we code a 0 for both the `prim_egip` and `prim_srpl` variables. We code a "1" for the presence of an ethnic `Claim` due to the demands for equal rights voiced by Sunni Arabs. For the previously discussed case of Myanmar, these variables all change over time as ethnic groups move in and out of the conflict. The participation of the dominant "Barma" ethnic group becomes pivotal in terms of whether or not these changes in the ethnic composition of the campaigns result in changes to the ethnic power status variables. Because at least one group is making an ethnic claim in every year of these campaigns, the `Claim` variable is always coded as "1" at the campaign-year level.
+
+### Coding cases with politically "Irrelevant" ethnic groups
+
+EPR codes some groups with the power status of "Irrelevant." In their scheme they do not consider "irrelevant" groups to be either included or excluded. We found several NAVCO 2.1 campaigns to include participation from groups EPR coded as irrelevant, and we wanted to include these cases in our analysis. In our view, EPR's "Irrelevant" category contains two very different types of cases. The first are cases of relative country-wide homogeneity (e.g. South Korea) in which EPR appears to be considering ethnicity as a whole to be not relevant to national politics. We treated these groups as equivalent to "included" groups in creating our coalition variable. In other words, in ethnically homogeneous countries, we coded every campaign as having the status "Incumbents." In other cases, the "irrelevant" label is applied in multi-ethnic societies to ethnic groups that are identifiable but not politically active. We treated these groups as equivalent to excluded ethnic groups for the purposes of constructing the Status variable.
+
+|     |
+|-----|
+|     |
+
+{{< pagebreak >}}
+
+## 
+
+| Variable Name     | Description                                                                                                                                                                                                                                                                | Source                           |
+|---------------|------------------------------------------|---------------|
+| `id`              | Campaign id from the NAVCO 2.1 Dataset                                                                                                                                                                                                                                     | NAVCO 2.1                        |
+| `camp_name`       | Campaign name                                                                                                                                                                                                                                                              | NAVCO 2.1                        |
+| `year`            | Year of campaign                                                                                                                                                                                                                                                           | NAVCO 2.1                        |
+| `location`        | Country in which campaign occurred                                                                                                                                                                                                                                         | NAVCO 2.1                        |
+| `loc_cow`         | Correlates of war country code for location                                                                                                                                                                                                                                | NAVCO 2.1                        |
+| `success`         | Whether the campaign fully achieved its stated political goals in the given year                                                                                                                                                                                           | NAVCO 2.1                        |
+| `Significant`     | Whether the campaign achieved at least significant concessions in the given year (derived from NAVCO `progress` variable)                                                                                                                                                  | derived from NAVCO 2.1           |
+| `Limited`         | Whether the campaign achieved at least limited concessions in the given year (derived from NAVCO `progress` variable)                                                                                                                                                      | derived from NAVCO 2.1           |
+| `Any_Progress`    | Whether the campaign achieved any progress towards its stated political goals in the given year (derived from NAVCO `progress` variable)                                                                                                                                   | derived from NAVCO 2.1           |
+| `prim_meth`       | primary tactics used by campaign in given year: 1 = nonviolent; 0 = violent                                                                                                                                                                                                | NAVCO 2.1                        |
+| `tactics`         | a categorical tactics variable based on NAVCO's prim_meth and violent_flank variables. "Violent" if `prim_meth` = 0; "Nonviolent" if `viol_flank` = 1; "Hybrid" if `viol_flank` = 2.                                                                                       | derived from NAVCO 2.1           |
+| `num_groups`      | the total number of distinct EPR ethnic groups participating in a campaign in a given year                                                                                                                                                                                 | derived from EGC 2.1             |
+| `Diverse`         | whether `num_groups` \> 1                                                                                                                                                                                                                                                  | derived from EGC 2.1             |
+| `pop_share`       | the sum percentage of the country population made up of the ethnic groups participating in the campaign                                                                                                                                                                    | derived from EGC 2.1             |
+| `Majority`        | whether the population share of of the campaign constitutes a demographic majority (i.e. `pop_share` \> .5)                                                                                                                                                                | derived from EGC 2.1             |
+| `Status3`         | a three-level categorical variable indicating the power relationships among ethnic groups participating in the campaign. "Incumbents" = all ethnic groups in power; "Excludeds" = all excluded; "Mixed" = at least one ethnic group in power and one excluded ethnic group | derived from EGC 2.1             |
+| `Incumbent`       | at least one ethnic group in power participating in the campaign                                                                                                                                                                                                           | derived from EGC 2.1             |
+| `prim_egip`       | the primary ethnic group (represents a plurality of campaign participants) is a junior partner or above                                                                                                                                                                    | derived from EGC 2.1             |
+| `prim_srpl`       | the primary ethnic group is a senior partner or above                                                                                                                                                                                                                      | derived from EGC 2.1             |
+| `prim_jp`         | the primary ethnic group is a junior partner                                                                                                                                                                                                                               | derived from EGC 2.1             |
+| `prim_excl`       | the primary ethnic group is excluded from political power                                                                                                                                                                                                                  | derived from EGC 2.1             |
+| `prim_irr`        | the primary ethnic group is coded by EPR as "irrelevant"                                                                                                                                                                                                                   | derived from EGC 2.1             |
+| `any_irrs`        | any ethnic group participating in the campaign is coded by EPR as "irrelevant"                                                                                                                                                                                             | derived from EGC 2.1             |
+| `any_claim`       | any ethnic group participating in the campaign makes an explicit ethnic claim                                                                                                                                                                                              | derived from EGC 2.1             |
+| `prim_all_urb`    | whether the primary ethnic group participating in a campaign is settled in urban areas                                                                                                                                                                                     | derived from EGC 2.1             |
+| `prim_tek`        | whether the primary ethnic group participating in a campaign has transnational ethnic kin                                                                                                                                                                                  | derived from EGC 2.1             |
+| `prim_nv_years`   | number of years the primary ethnic group has previously participated in any campaign using primarily nonviolent tactics                                                                                                                                                    | derived from EGC 2.1             |
+| `prim_viol_years` | number of years the primary ethnic group has previously participated in any campaign using primarily violent tactics                                                                                                                                                       | derived from EGC 2.1             |
+| `sim_nv`          | whether there is a simultaneous nonviolent campaign in the country in that year                                                                                                                                                                                            | derived from NAVCO 2.1           |
+| `sim_viol`        | whether there is a simultaneous violent campaign in the country in that year                                                                                                                                                                                               | derived from NAVCO 2.1           |
+| `cyear`           | 0 = first year of a campaign; 1 = ongoing campaign; 2 = final year of a campaign                                                                                                                                                                                           | NAVCO 2.1                        |
+| `territorial`     | whether campaign's goal is territorial autonomy or secession (NAVCO `camp_goals` \> 2)                                                                                                                                                                                     | derived from NAVCO 2.1           |
+| `total_part`      | estimated total number of participants in campaign                                                                                                                                                                                                                         | NAVCO 2.1                        |
+| `camp_support`    | whether campaign received support from a foreign state                                                                                                                                                                                                                     | NAVCO 2.1                        |
+| `ingo_support`    | whether campaign received support from an INGO                                                                                                                                                                                                                             | NAVCO 2.1                        |
+| `dias_support`    | whether campaign received support from a diaspora population                                                                                                                                                                                                               | NAVCO 2.1                        |
+| `e_gdppc`         | per capita GDP                                                                                                                                                                                                                                                             | Fariss et al 2021 via V-Dem v.14 |
+| `e_pop`           | country population                                                                                                                                                                                                                                                         | Fariss et al 2021 via V-Demv.14  |
+| `v2x_polyarchy`   | electoral democracy index                                                                                                                                                                                                                                                  | V-Dem v. 14                      |
+| `v2x_cspart`      | civil society participation index                                                                                                                                                                                                                                          | V-Dem v. 14                      |
+| `v2x_egal`        | egalitarian democracy index                                                                                                                                                                                                                                                | V-Dem v. 14                      |
+| `v2x_clphy`       | physical violence index                                                                                                                                                                                                                                                    | V-Dem v. 14                      |
+| `success_spell`   | time spell for campaign that resets to 0 when `success` == 1                                                                                                                                                                                                               |                                  |
+| `progress_spell`  | time spell for campaign that resets to 0 when `Any_Progress` == 1                                                                                                                                                                                                          |                                  |
+
+: Variables in the Campaign-Year (Replication) Data Set {tbl-colwidths="\[20,60,20\]"}
+
+{{< pagebreak >}}
+
+## Main Models and Alternative Specifications
+
+The analyses that follow provide further detail on the main models presented in Table 3 of the main text, as well as additional models to assess the robustness of the findings. We first present the complete results of the models presented in Table 3 of the main text, including intercepts, time spells, and goodness of fit statistics.
+
+```{r Main regressions by Tactics, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVCamps <- glm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+ViolCamps <- glm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All <- glm(success~ prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+MainModels <- list(
+  "(1) Nonviolent" = NVCamps,
+  "(2) Violent" = ViolCamps,
+  "(3) All" = All,
+  "(4) All w/ Interactions" = Interactions)
+
+
+MainTextTable3 <- modelsummary(MainModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Full Presentation of Main Models (Main Text Table 3)", output = "kableExtra")
+
+
+
+MainTextTable3 %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+
+```
+
+### Diversity, No Controls
+
+Simple models with just the measure of number of ethnic groups, tactics, and time spells. The results are largely similar to those when the ethnic power status and control variables are included.
+
+```{r Diversity Binary, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_DivSimple <- glm(success~ log(num_groups) + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_DivSimple <- glm(success~ log(num_groups)+ + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_DivSimple <- glm(success~ prim_meth + log(num_groups) +  success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_DivSimple <- glm(success~prim_meth * log(num_groups) + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+DivSimpleModels <- list(
+  "(1) Nonviolent" = NV_DivSimple,
+  "(2) Violent" = Viol_DivSimple,
+  "(3) All" = All_DivSimple,
+  "(4) All w/ Interactions" = Interactions_DivSimple)
+
+
+DivSimpleTable <- modelsummary(DivSimpleModels, stars = T,  gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "log(num_groups)" = "Number of Groups (log)", "prim_meth1:log(num_groups)" = "NV * Groups", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Simple Models for Diversity Variable", output = "kableExtra")
+
+
+
+DivSimpleTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+### Ethnic Power Status, No Controls
+
+Simple models with just the measures of ethnic power status, tactics, and time spells. The results are largely similar to those when the number of groups and control variables are included. However, we see stronger results for "Mixed Coalitions," especially among nonviolent campaigns. This makes sense as all campaigns featuring Mixed Coalitions by definition must have at least two participating ethnic groups. Thus, while Mixed Coalitions appear to be associated with higher rates of success than Challengers Only campaigns in these simple models, our main models suggest that this may be the result of those campaigns featuring more groups generally, and not specific to the power status combination of included and excluded groups.
+
+```{r Power Status Simple, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_StatusSimple <- glm(success~  Status3 + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_StatusSimple <- glm(success~  Status3 + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_StatusSimple <- glm(success~ prim_meth +  Status3 +  success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_StatusSimple <- glm(success~prim_meth*Status3 +  success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+StatusSimpleModels <- list(
+  "(1) Nonviolent" = NV_StatusSimple,
+  "(2) Violent" = Viol_StatusSimple,
+  "(3) All" = All_StatusSimple,
+  "(4) All w/ Interactions" = Interactions_StatusSimple)
+
+
+StatusSimpleTable <- modelsummary(StatusSimpleModels, stars = T, gof_map = c("nobs", "aic", "logLik", "rmse"), coef_rename = c("prim_meth1" = "Nonviolent", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" ,  "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed",  "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Simple Models for Ethnic Power Status Variable", output = "kableExtra")
+
+
+
+StatusSimpleTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+### Diversity and Status, No Controls
+
+In these models we include all three main variables of interest (tactics, diversity, and status) along with time spells, but no other controls. These results are very similar to the results of the main models. It thus confirms that controlling for diversity impacts the observed relationship between Mixed status and outcomes. It also reveals that the control variables included in the main models have little impact on the primary associations of interest.
+
+```{r No Controls, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_NoControls <- glm(success~  log(num_groups) + Status3 + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_NoControls <- glm(success~  log(num_groups) + Status3 + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_NoControls <- glm(success~ prim_meth + log(num_groups) + Status3 +  success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_NoControls <- glm(success~ prim_meth*log(num_groups) + prim_meth*Status3 +  success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+NoControlsModels <- list(
+  "(1) Nonviolent" = NV_NoControls,
+  "(2) Violent" = Viol_NoControls,
+  "(3) All" = All_NoControls,
+  "(4) All w/ Interactions" = Interactions_NoControls)
+
+
+NoControlsTable <- modelsummary(NoControlsModels, stars = T, gof_map = c("nobs", "aic", "logLik", "rmse"), coef_rename = c("prim_meth1" = "Nonviolent", "log(num_groups)" = "Number of Groups (log)", "prim_meth1:log(num_groups)" = "NV * Groups", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" ,  "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed",  "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Simple Models for Ethnic Power Status Variable", output = "kableExtra")
+
+
+
+NoControlsTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+### Firth Logits
+
+To ensure no bias due to the relatively rare nature of success or possibility of perfect prediction, we report the main models run as Firth Logits using the logistf() package. These results are nearly identical to the main models.
+
+```{r Firth regressions, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVFirths <- logistf(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+ViolFirths <- logistf(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+AllFirths <- logistf(success~ prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+InterFirths <- logistf(success~prim_meth * log(num_groups) + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+FirthModels <- list(
+  "(1) Nonviolent" = NVFirths,
+  "(2) Violent" = ViolFirths,
+  "(3) All" = AllFirths,
+  "(4) All w/ Interactions" = InterFirths)
+
+
+FirthTable <- modelsummary(FirthModels, stars = T,  coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share", "prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Firth Penalized Logits", output = "kableExtra")
+
+FirthTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+### LPM Models
+
+We run linear probability models as an alternative functional form for a binary dependent variable. While we believe the low baseline rate of our outcome variable ("success", mean = 0.054) make logits a better choice, we run these models primarily to help locate possible sources of difference between our findings and those of Manekin and Mitts (2022). Indeed, while many of the results are the similar, we now get statistically significant coefficients for the interaction terms between primary tactics and Incumbents and that interaction is now positive. This is not as much of a difference as it at first seems. The LPM is capturing the change in success in additive terms/marginal effects while the logits captured the change in success in multiplicative or odds-based terms. Our presentation of the marginal effects from the main interaction model in Figure 1 in the main text actually shows this quite well. The expected likelihood of success for campaigns comprised entirely of ethnic groups with excluded status increases from 0.5% when using violent tactics to 6.5% when using nonviolent tactics. That is an increase of 6% in additive terms, but a 13-fold increase in multiplicative terms. Incumbents' expected likelihood of success increases from 1% to 11%. That's a larger 10% difference in additive terms, but a similar 11-fold increase in multiplicative terms (for a deeper presentation of interpreting interaction terms in Logits versus LPMs, see [Maarten L. Buis, "Stata tip 87: Interpretation of interactions in nonlinear models," *The Stata Journal* 10:2 (2010): 305-308)](https://journals.sagepub.com/doi/pdf/10.1177/1536867X1001000211)).
+
+Importantly, the marginal effect for nonviolent tactics is still positive across all categories of ethnic power status. We show this in the figure below, which mirrors Figure 2 in the main text, but using the LPM.
+
+```{r, LPM effects plot, fig.align = 'center', fig.cap = "Pairwise Contrasts for Tactics across Ethnic Coalitions from LPMs", fig.height = 3, echo=F}
+
+NVLPM <- lm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,])
+
+ViolLPM <- lm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,])
+
+AllLPM <- lm(success~ prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM)
+
+InterLPM <- lm(success~prim_meth * log(num_groups) + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM)
+
+
+
+InterLPM_pairwise <- hypothesis_test(InterLPM, terms = c( "Status3", "prim_meth"), vcov = ~loc_cow) %>%
+  filter(Status3 == "Incumbents-Incumbents" | Status3 == "Mixed-Mixed" | Status3 == "Excluded-Excluded")%>%
+  mutate(Status = replace(Status3, Status3 == "Incumbents-Incumbents", "All Incumbents"),
+         Status = replace(Status, Status3 == "Mixed-Mixed", "Mixed"),
+         Status = replace(Status, Status3 == "Excluded-Excluded", "All Excluded")) %>%
+  select(-Status3)
+
+InterLPM_pairwise_flip <- InterLPM_pairwise %>%
+  mutate(diff = Contrast - conf.low,
+         Contrast = -Contrast,
+         conf.high = Contrast + diff,
+         conf.low = Contrast - diff,
+         Tactics = "Nonviolent",
+         Status = factor(Status, levels = c("All Excluded", "Mixed", "All Incumbents")))
+
+myColors2 <- c("#7a9a01",  "#E6AB02", "#7570B3", "#CC6640", "#002F6C")
+
+ggplot(InterLPM_pairwise_flip, aes(Contrast, Tactics, color=Status, shape = Status)) +
+    geom_pointrange(aes(xmin = conf.low, xmax = conf.high), position = position_dodge(width = 0.4)) +
+  geom_vline(xintercept = 0) +
+   labs(x = "Percentage Point Difference in Expected Outcome",
+         y = "Tactics",
+        color = "Ethnic Status",
+        shape = "Ethnic Status") +
+  #xlim(-.05,.1) +
+    theme_bw() +
+  scale_shape_manual(values = c(17, 19, 15), guide = guide_legend(reverse = TRUE)) + 
+  scale_color_manual(values = myColors2, guide = guide_legend(reverse = TRUE)) 
+
+```
+
+```{r LPM regression Table, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+LPMModels <- list(
+  "(1) Nonviolent" = NVLPM,
+  "(2) Violent" = ViolLPM,
+  "(3) All" = AllLPM,
+  "(4) All w/ Interactions" = InterLPM)
+
+
+LPMTable <- modelsummary(LPMModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share", "prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Linear Probability Models (OLS)", output = "kableExtra")
+
+LPMTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+
+
+```
+
+{{< pagebreak >}}
+
+### Fixed Effects
+
+To assess for possible omitted factors that could be correlated with time or country, we run a series of binary choice fixed effects models using the bife() package. We run a yearly fixed effects, country fixed effects, and both together (two-way fixed effects). The results are nearly identical to our original interaction term model, with some increase in standard errors (and resulting drop in p-value to between 0.1 and 0.05) when country fixed effects are included. This is primarily due to the reduction in observations when there is no within-country variation. We are not able to run campaign-level fixed effects because of insufficient variation (i.e. we would lose from the analysis all campaigns that never succeed).
+
+```{r Fixed Effect Logits, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+BIFE_Year <- bife(success~prim_meth * log(num_groups) + prim_meth*Status3  + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3) | year , data =NAVCO_EGC_VDEM, model = "logit")
+
+BIFE_Country <- bife(success~prim_meth * log(num_groups) + prim_meth*Status3 +pop_share + + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3) | loc_cow , data =NAVCO_EGC_VDEM, model = "logit")
+
+
+BIFE_TwoWay <- bife(success~prim_meth * log(num_groups) + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3) + factor(year)| loc_cow , data =NAVCO_EGC_VDEM, model = "logit")
+
+
+BIFEs <- list(
+  "(1) Year" = BIFE_Year,
+  "(2) Country" = BIFE_Country,
+  "(3) Two-Way" = BIFE_TwoWay)
+
+
+BIFETable <- modelsummary(BIFEs, stars = T, coef_map = c("(Intercept)" = "Intercept" ,"prim_meth1" = "Nonviolent",  "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share", "prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time spell", "I(success_spell^2)" = "Spell squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Fixed Effects Models", output = "kableExtra")
+
+BIFETable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+
+
+
+```
+
+{{< pagebreak >}}
+
+## Additional Control Variables
+
+The following tables add additional control variables to the main models presented in the main text. In some cases, like campaign size, we face a tradeoff between the risks of omitted variable bias and posttreatment variable bias as it is not clear whether the control variable is causally prior or subsequent to our main ethnicity variables.
+
+### Campaign Size
+
+In these models, we include the logged estimated number of total participants (`total_part`) from the NAVCO 2.1 dataset. While the ethnic power status variables remain largely unchanged, the relationship between the number of groups and success is no longer significant. Future research might seek to explore the causal sequencing: does greater campaign diversity generate greater participation? or do larger numbers of participants simple increase the likelihood that members of more different groups will be present within a campaign?
+
+```{r Campaign Size, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_Size <- glm(success~ log(num_groups) + Status3 + log(total_part) + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_Size <- glm(success~ log(num_groups) + Status3 + log(total_part) + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_Size <- glm(success~ prim_meth + log(num_groups) + Status3 + log(total_part) + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_Size <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + log(total_part) + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+SizeModels <- list(
+  "(1) Nonviolent" = NV_Size,
+  "(2) Violent" = Viol_Size,
+  "(3) All" = All_Size,
+  "(4) All w/ Interactions" = Interactions_Size)
+
+
+SizeTable <- modelsummary(SizeModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "log(total_part)" = "Campaign Size",  "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Additional Controls: Measures of Campaign Size", output = "kableExtra")
+
+
+
+SizeTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+```
+
+{{< pagebreak >}}
+
+### International Support
+
+These models add three NAVCO variables measuring international support from foreign states (`camp_support`), from INGOs (`ingo_support`), and from diaspora populations (`dias_support`).
+
+```{r  International Support, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_Intl <- glm(success~ log(num_groups) + Status3 + camp_support + ingo_support + dias_support + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_Intl <- glm(success~ log(num_groups) + Status3 +  camp_support + ingo_support + dias_support + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_Intl <- glm(success~ prim_meth + log(num_groups) + Status3 + camp_support + ingo_support + dias_support + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_Intl <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + camp_support + ingo_support + dias_support + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+IntlModels <- list(
+  "(1) Nonviolent" = NV_Intl,
+  "(2) Violent" = Viol_Intl,
+  "(3) All" = All_Intl,
+  "(4) All w/ Interactions" = Interactions_Intl)
+
+
+IntlTable <- modelsummary(IntlModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "camp_support" = "State Support",  "ingo_support" = "INGO Support", "dias_support" = "Diaspora Support", "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Additional Controls: Measures of International Support for Campaign", output = "kableExtra")
+
+
+
+IntlTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+
+```
+
+{{< pagebreak >}}
+
+### Transnational Ethnic Kin
+
+The following models use EPR data to code whether the ethnic group that constitutes the plurality of a campaign has co-ethnics in another country (what EPR calls "transnational ethnic kin"). It is possible that expectations of support from diaspora groups could make ethnic minorities more likely to attempt campaigns and more likely to be successful. Inclusion of this variable does not alter our main findings.
+
+```{r TEK, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_TEK <- glm(success~ log(num_groups) + Status3 + prim_tek + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_TEK <- glm(success~ log(num_groups) + Status3 + prim_tek + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_TEK <- glm(success~ prim_meth + log(num_groups) + Status3 + prim_tek + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_TEK <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + prim_tek + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+TEKModels <- list(
+  "(1) Nonviolent" = NV_TEK,
+  "(2) Violent" = Viol_TEK,
+  "(3) All" = All_TEK,
+  "(4) All w/ Interactions" = Interactions_TEK)
+
+
+TEKTable <- modelsummary(TEKModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "prim_tek" = "Trans. Ethnic Kin",  "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Additional Controls: Measure of Transnational Ethnic Kin", output = "kableExtra")
+
+
+
+TEKTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+
+```
+
+{{< pagebreak >}}
+
+### Past Campaign Participation
+
+These models include counts for the number of prior years the primary ethnic group in a campaign has participated in nonviolent and violent campaigns. The inclusion of these variables has little effect on our main findings.
+
+```{r Past Participation, echo=FALSE, message=FALSE, warning=FALSE}
+
+NV_PastPart <- glm(success~ log(num_groups) + Status3 + prim_nv_years + prim_viol_years + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_PastPart <- glm(success~ log(num_groups) + Status3 + prim_nv_years + prim_viol_years + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_PastPart <- glm(success~ prim_meth + log(num_groups) + Status3 + prim_nv_years + prim_viol_years + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_PastPart <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + prim_nv_years + prim_viol_years + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+PastPartModels <- list(
+  "(1) Nonviolent" = NV_PastPart,
+  "(2) Violent" = Viol_PastPart,
+  "(3) All" = All_PastPart,
+  "(4) All w/ Interactions" = Interactions_PastPart)
+
+
+PastPartTable <- modelsummary(PastPartModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "prim_nv_years" = "Past NV Part.", "prim_viol_years" = "Past Viol Part.",  "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Additional Controls: Counts of Prior Ethnic Group Participation", output = "kableExtra")
+
+
+
+PastPartTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+```
+
+{{< pagebreak >}}
+
+### Simultaneous Campaign Measures
+
+To assess the possible effects of simultaneous campaigns in the same country, we include dummy variables indicating whether there is another ongoing campaign employing either violent or nonviolent tactics. Inclusion of these variables has no effect on our main findings.
+
+```{r Simultaneous Campaigns, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+NV_Sim <- glm(success~ log(num_groups) + Status3 + sim_nv + sim_viol + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+Viol_Sim <- glm(success~ log(num_groups) + Status3 + sim_nv + sim_viol + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+All_Sim <- glm(success~ prim_meth + log(num_groups) + Status3 + sim_nv + sim_viol + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Interactions_Sim <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + sim_nv + sim_viol + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+SimModels <- list(
+  "(1) Nonviolent" = NV_Sim,
+  "(2) Violent" = Viol_Sim,
+  "(3) All" = All_Sim,
+  "(4) All w/ Interactions" = Interactions_Sim)
+
+
+SimTable <- modelsummary(SimModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "sim_nv" = "Simultaneous NV Camp.", "sim_viol" = "Simultaneous Viol Camp.",  "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Additional Controls: Indicator of Concurrent Violent or Nonviolent Campaign", output = "kableExtra")
+
+
+
+SimTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+
+```
+
+{{< pagebreak >}}
+
+## Alternative Ethnicity Measures
+
+In the models below, we explore alternative measures of ethnicity that can be obtained using our dataset. Select models are used to create Figure 3 in the main text.
+
+### Ethnic Claims
+
+In these models, we explore a different dimension of ethnicity: whether or not campaigns make explicit claims along the basis of ethnicity. First, we present a contingency table showing the relationship between ethnic claims and ethnic coalition. While nearly all Excludeds campaigns make ethnic claims, there is variation among both Mixeds and even Incumbents. The results are similar to our main findings, with a slightly stronger negative effect for claims among nonviolent campaigns.
+
+```{r, ethnic claims, echo=FALSE, message=FALSE, warning=FALSE}
+claimsummarydata <- NAVCO_EGC_VDEM %>% 
+  mutate(Status3 = factor(Status3, levels = c("Excluded", "Mixed", "Incumbents")),
+         Claim = factor(ifelse(any_claim ==1, "Ethnic Claim", "No Claim")))%>%
+  select(Status3, Claim)
+
+
+ClaimCoalitionTable <- datasummary_balance(~Status3, data = claimsummarydata, title = 'The overlap of ethnic coalitions and claims.', output = "kableExtra")
+
+ClaimCoalitionTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 10)
+```
+
+```{r Claims regressions, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVClaim <- glm(success~ log(num_groups) + any_claim + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+ViolClaim <- glm(success~ log(num_groups) + any_claim + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+AllClaim <- glm(success~ prim_meth + log(num_groups) + any_claim + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+InterClaim <- glm(success~prim_meth * log(num_groups) + prim_meth*any_claim + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+
+ClaimModels <- list(
+  "(1) Nonviolent" = NVClaim,
+  "(2) Violent" = ViolClaim,
+  "(3) All" = AllClaim,
+  "(4) All w/ Interactions" = InterClaim)
+
+
+ClaimTable <- modelsummary(ClaimModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "any_claim" = "Ethnic Claim", "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:any_claim" = "NV * Ethnic Claim",  "pop_share" = "Population Share","prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Measuring Ethnicity on the Basis of Claims", output = "kableExtra")
+
+ClaimTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+### Binary Ethnic Diversity Measure:
+
+In the models below, we use a binary measure of whether more than one ethnic group participates in a campaign. It is similar in concept to NAVCO 2.1's `cdivers_ethnic` measure, but constructed with our own data on the ethnic composition of NAVCO campaigns.
+
+```{r Binary Diversity, echo=FALSE, message=FALSE, warning=FALSE}
+#NAVCO_EGC_VDEM$Diverse <- factor(ifelse(NAVCO_EGC_VDEM$num_groups >1, 1, 0))
+
+NVDiv <- glm(success~Diverse + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+ViolDiv <- glm(success~Diverse + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+AllDiv <- glm(success~prim_meth + Diverse + prim_meth + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+InterDiv <- glm(success~prim_meth * Diverse + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+DivModels <- list(
+  "(1) Nonviolent" = NVDiv,
+  "(2) Violent" = ViolDiv,
+  "(3) All" = AllDiv,
+  "(4) All w/ Interactions" = InterDiv)
+
+
+DivTable <- modelsummary(DivModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "Diverse1" = "Diverse", "log(num_groups)" = "Number of Groups (log)",  "prim_meth1:Diverse1" = "NV * Diverse", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share", "prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Binary Ethnic Status Measure: Challengers Only", output = "kableExtra")
+
+DivTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+```
+
+{{< pagebreak >}}
+
+### Binary Ethnic Power Measure: Only Incumbents
+
+Next, we treat Incumbents as our indicator variable, with campaigns that have any participation by an excluded group as the reference (i.e. Mixed and Excludeds together).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#NAVCO_EGC_VDEM$Incumbent <- factor(ifelse(NAVCO_EGC_VDEM$Status3 == "Incumbents", 1, 0))
+
+NVIncBin <- glm(success~ log(num_groups) + Incumbent + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+ViolIncBin <- glm(success~ log(num_groups) + Incumbent + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+AllIncBin <- glm(success~ prim_meth + log(num_groups) + Incumbent + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+InterIncBin <- glm(success~prim_meth * log(num_groups) + prim_meth*Incumbent + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+IncBinModels <- list(
+  "(1) Nonviolent" = NVIncBin,
+  "(2) Violent" = ViolIncBin,
+  "(3) All" = AllIncBin,
+  "(4) All w/ Interactions" = InterIncBin)
+
+
+IncBinTable <- modelsummary(IncBinModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Incumbent1" = "Status: All Incumbents", "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Incumbent1" = "NV * Incumbent",  "pop_share" = "Population Share","prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Binary Ethnic Status Measure: Incumbents Only", output = "kableExtra")
+
+IncBinTable %>%
+  kable_styling(latex_options = c( "HOLD_position"), font_size = 8)
+```
+
+### 
+
+{{< pagebreak >}}
+
+### Binary Ethnic Power Measure: Status of "Plurality" Ethnic group
+
+In this model, instead of measuring whether *any* participating ethnic group is an incumbent, we identify the ethnic group that constitutes a plurality of the participants in the campaign in a given year. We then code the campaign-year by whether or not the plurality ethnic group is an incumbent or not. This approach parallels the measure from Thurber (2018) used by Manekin and Mitts (2022).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVPrimEgip <- glm(success~ log(num_groups) + prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1 & NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+ViolPrimEgip <- glm(success~ log(num_groups) + prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0 & NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+AllPrimEgip <- glm(success~ prim_meth + log(num_groups) + prim_egip + prim_all_urb + pop_share + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+InterPrimEgip <- glm(success~prim_meth * log(num_groups) + prim_meth*prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+
+PrimEgipModels <- list(
+  "(1) Nonviolent" = NVPrimEgip,
+  "(2) Violent" = ViolPrimEgip,
+  "(3) All" = AllPrimEgip,
+  "(4) All w/ Interactions" = InterPrimEgip)
+
+
+PrimEgipTable <- modelsummary(PrimEgipModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "prim_egip" = "Plurality Incumbent", "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:prim_egip" = "NV * Pl. Incumb.",  "pop_share" = "Population Share","prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Binary Ethnic Status Measure: Plurality Incumbent", output = "kableExtra")
+
+PrimEgipTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+### Binary Ethnic Power Measure: Primary by Senior+ status
+
+In the following analysis, we use a similar measurement scheme based on identifying the participating ethnic group that constitutes the plurality of participants. But we change the power status threshold to identify only those where the plurality group holds the status of "Senior Power" or higher in the EPR classification system. The level of "Junior Partner", which identifies groups that are included in power, albeit in a subordinate position to another ethnic group, is now coded along with politically excluded groups. This coding system most closely approximates those used in analyses by Thurber (2018, 2021) and Pischedda (2020).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVPrimSRPL <- glm(success~ log(num_groups) + prim_srpl + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1 & NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+ViolPrimSRPL <- glm(success~ log(num_groups) + prim_srpl + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0 & NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+AllPrimSRPL <- glm(success~ prim_meth + log(num_groups) + prim_srpl + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+InterPrimSRPL <- glm(success~prim_meth * log(num_groups) + prim_meth*prim_srpl + prim_all_urb + pop_share + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$any_irrs ==0,], family = binomial)
+
+
+PrimSRPLModels <- list(
+  "(1) Nonviolent" = NVPrimSRPL,
+  "(2) Violent" = ViolPrimSRPL,
+  "(3) All" = AllPrimSRPL,
+  "(4) All w/ Interactions" = InterPrimSRPL)
+
+
+PrimSRPLTable <- modelsummary(PrimSRPLModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "prim_srpl" = "Plurality Senior+", "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:prim_srpl" = "NV * Prim Sr+",  "pop_share" = "Population Share", "prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Binary Ethnic Status Measure: Plurality Senior Partner+", output = "kableExtra")
+
+PrimSRPLTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 7)
+
+```
+
+{{< pagebreak >}}
+
+### Binary Demography Measure
+
+In the models below, we create a dummy variable to represent if the participating ethnic groups constitute a demographic majority of the country.
+
+```{r Demographic majority regressions, echo=FALSE, message=FALSE, warning=FALSE}
+#NAVCO_EGC_VDEM$Majority <- factor(ifelse(NAVCO_EGC_VDEM$pop_share > .5, 1, 0))
+
+NVMaj <- glm(success~ log(num_groups) + Majority + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1,], family = binomial)
+
+ViolMaj <- glm(success~ log(num_groups) + Majority + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0,], family = binomial)
+
+AllMaj <- glm(success~ prim_meth + log(num_groups) + Majority + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+InterMaj <- glm(success~prim_meth * log(num_groups) + prim_meth*Majority + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+
+MajModels <- list(
+  "(1) Nonviolent" = NVMaj,
+  "(2) Violent" = ViolMaj,
+  "(3) All" = AllMaj,
+  "(4) All w/ Interactions" = InterMaj)
+
+
+MajTable <- modelsummary(MajModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Majority1" = "Demographic Majority", "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Majority1" = "NV * Majority",  "pop_share" = "Population Share", "prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Measuring Ethnicity by Demographic Majority", output = "kableExtra")
+
+MajTable %>%
+  kable_styling(latex_options = c( "HOLD_position"), font_size = 8)
+```
+
+{{< pagebreak >}}
+
+## Alternative Subsets of the Data
+
+In the models below, we test the robustness of our findings on various subsets of our data, enabling us to evaluate whether our results are specific to various assumptions and scope conditions we set.
+
+### Campaign-Level Analysis
+
+Below, we aggregate from the campaign-year to the campaign level, relying on observations only from the last year of a campaign. This offers another way of viewing the role of time/duration within campaigns as it treats a campaign that succeeds in its first year the same as a campaign that succeeds after 10 years. First, we present just a descriptive table of ethnic status and outcomes, using the binary measure of the plurality group's ethnic power status (we do this both for simplicity as well as because it allows another point of comparison to Manekin and Mitts 2022 as it parallels their Appendix Table 2). We see patterns consistent with the main findings: lower rates of success for excluded groups, but higher rates of success for the use of nonviolent tactics for both included and excluded groups.
+
+```{r Camp Level Table, echo= F}
+
+CampLevel <- NAVCO_EGC_VDEM %>%
+  filter(cyear == 2)
+
+summarydata_camp <- CampLevel %>% 
+  mutate(Tactics=case_when(prim_meth==1~"Nonviolent", TRUE~"Violent"),
+         Status = factor(case_when(prim_excl==1~"Excluded Groups", TRUE ~ "Non-excluded Groups"))) %>%
+ select("Success" = success, Tactics, Status)
+  
+CampLevelTable <- datasummary(Heading("")*Mean*(Status) ~ (Success)*Tactics, data = summarydata_camp, title = 'Campaign-level rates of success by ethnic power status of plurality group.', output = "kableExtra")
+
+CampLevelTable %>%
+  kable_styling(latex_options = c("HOLD_position"))
+```
+
+We then turn to a regression analysis of the campaign-level data. The results related to H2 and H3 are consistent with our main findings (i.e. a positive association for nonviolent tactics among excluded groups and a positive association for number of groups when nonviolent tactics are used). We no longer see statistically significant associations between ethnic status and outcomes, however we are limited by a much smaller sample size in this analysis.
+
+```{r Campaign Level Regressions, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVCampLevel <- glm(success~ log(num_groups) + prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy, data =CampLevel[CampLevel$prim_meth==1,], family = binomial)
+
+ViolCampLevel <- glm(success~ log(num_groups) + prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy, data =CampLevel[CampLevel$prim_meth==0,], family = binomial)
+
+AllCampLevel <- glm(success~ prim_meth + log(num_groups) + prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy, data =CampLevel, family = binomial)
+
+InterCampLevel <- glm(success~prim_meth * log(num_groups) + prim_meth*prim_egip + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy, data =CampLevel, family = binomial)
+
+
+
+CampLevelModels <- list(
+  "(1) Nonviolent" = NVCampLevel,
+  "(2) Violent" = ViolCampLevel,
+  "(3) All" = AllCampLevel,
+  "(4) All w/ Interactions" = InterCampLevel)
+
+
+CampLevelRegs <- modelsummary(CampLevelModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("log(num_groups)" = "Number of Groups (log)", "prim_meth1" = "Nonviolent",  "prim_egip" = "Plurality Incumbent", "prim_meth1:prim_egip" = "NV * Pl. Incumb.", "prim_meth1:log(num_groups)" = "NV * Groups", "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Campaign-Level Analysis", output = "kableExtra")
+
+
+
+CampLevelRegs %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+```
+
+{{< pagebreak >}}
+
+### No Irrelevants
+
+In these models we remove all campaigns that featured participation by groups coded as "Irrelevant" by EPR. The results are nearly identical to our main findings.
+
+```{r Irrelevants removed, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVCamps_NoIrrs <- glm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1 & NAVCO_EGC_VDEM$any_irrs==0,], family = binomial)
+
+ViolCamps_NoIrrs <- glm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0 & NAVCO_EGC_VDEM$any_irrs == 0,], family = binomial)
+
+All_NoIrrs <- glm(success~ prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) +  v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$any_irrs == 0,], family = binomial)
+
+Interactions_NoIrrs <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$any_irrs == 0,], family = binomial)
+
+
+
+NoIrrsModels <- list(
+  "(1) Nonviolent" = NVCamps_NoIrrs,
+  "(2) Violent" = ViolCamps_NoIrrs,
+  "(3) All" = All_NoIrrs,
+  "(4) All w/ Interactions" = Interactions_NoIrrs)
+
+
+NoIrrsTable <- modelsummary(NoIrrsModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share","prim_all_urb" = "Urban Plurality", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Main Models with 'Irrelevant' Groups Removed", output = "kableExtra")
+
+
+
+NoIrrsTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+
+```
+
+{{< pagebreak >}}
+
+### Regime-Change Only Models
+
+These models examine only the cases where the campaign is seeking regime change. This shrinks the universe of campaign-year observations to 1306. The results are nearly identical to our main findings.
+
+```{r Regime-Change regressions, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVRC <- glm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1 & NAVCO_EGC_VDEM$territorial==0,], family = binomial)
+
+ViolRC <- glm(success~ log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0& NAVCO_EGC_VDEM$territorial==0,], family = binomial)
+
+AllRC <- glm(success~ prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$territorial==0,], family = binomial)
+
+InterRC <- glm(success~prim_meth * log(num_groups) + prim_meth*Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$territorial==0,], family = binomial)
+
+
+
+RCModels <- list(
+  "(1) Nonviolent" = NVRC,
+  "(2) Violent" = ViolRC,
+  "(3) All" = AllRC,
+  "(4) All w/ Interactions" = InterRC)
+
+
+RCTable <- modelsummary(RCModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:Status3Incumbents" = "NV * Incumbent", "prim_meth1:Status3Mixed" = "NV * Mixed", "pop_share" = "Population Share", "prim_all_urb" = "Any Urban Group",  "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Analysis of Only Campaigns Seeking Regime-Change", output = "kableExtra")
+
+RCTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+## Comparing to Manekin and Mitts (2022)
+
+An important question we had when evaluating our findings was why they differed from the observational results reported in Manekin and Mitts (2022). Our results differ in two important ways: 1) M&M find evidence for a statistically significant interaction effect between tactics and ethnic status; 2) M&M find no statistically significant marginal effect for nonviolent tactics when used by minorities.
+
+We have identified two sources for these different results. First, there is a difference in model choice: M&M use LPMs while we use logits. In this case, as we explain in the main text, the difference in modeling choice is substantively meaningful. While the LPM looks at additive percentage point differences in success rates, the logit examines multiplicative percent differences in success rates. And as we showed earlier in this Appendix, if we run LPMs on our data, we get a statistically significant interaction term, just like Manekin and Mitts.
+
+Meanwhile, the contradictory findings related to the effect of nonviolent tactics for minorities appears to be a consequence of the underlying data: the expanded and updated NAVCO 2.1 dataset used to create the units of analysis for this study appears to contain more cases of nonviolent minority success than the older NAVCO 2.0 dataset used by Thurber (2018) and Manekin and Mitts (2022).
+
+In the tables below we show the annual success rates by tactic and ethnic power status of the plurality group (the measure used by Manekin and Mitts) first in our data and then in the data used by Manekin and Mitts. Following M&M, we exclude campaigns in featuring participation by groups coded by EPR as "irrelevant."
+
+```{r MM Comparison Tables, echo = F}
+
+
+summarydata_binary <- NAVCO_EGC_VDEM %>% 
+  filter(prim_irr == 0) %>%
+  mutate(Tactics=case_when(prim_meth==1~"Nonviolent", TRUE~"Violent"),
+         Status = factor(case_when(prim_excl==1~"Excluded Groups", TRUE ~ "Non-excluded Groups"))) %>%
+ select("Success" = success, Tactics, Status)
+  
+BinTable <- datasummary(Heading("")*Mean*(Status) ~ (Success)*Tactics, data = summarydata_binary, title = 'NAVCO 2.1 (this paper) Annual rates of success by ethnic power status of plurality group.', output = "kableExtra")
+
+BinTable %>%
+  kable_styling(latex_options = c("HOLD_position"))
+
+MMData <- data.frame(
+  Status = c("Excluded Groups", "Non-excluded Groups"),
+  Nonviolent = c(.05, .26),
+  Violent = c(.02, .05)
+)
+
+kable(MMData, caption = "NAVCO 2.0 (Manekin and Mitts 2022) Annual rates of success by ethnic power status of plurality group.") %>%
+  kable_styling(latex_options = c("HOLD_position"))
+```
+
+Overall, the patterns are very similar. Even in the Manekin and Mitts data, we see minorities achieving success more than twice as often when they use nonviolent as compared to violent tactics. But this difference (5% to 2%) is smaller than what we see in our data (7% to 1%). That difference appears to be washed away when control variables are added in Manekin and Mitts' study, but not in ours.
+
+In the table below, we report the 10 cases of success where the plurality ethnic group was politically excluded and used nonviolent tactics. Four of these cases do not appear similarly in the Manekin and Mitts data. Two of these cases, the Anti-Sanchez de Lozada Campaign in Bolivia and the Pro-Democracy movement in the CAR, were new additions to the NAVCO 2.1 dataset. Two others, the South African Second Defiance Campaign and the Timorese Independence Campaign, appear in the Manekin and Mitts data as employing primarily violent tactics in all years, though the NAVCO 2.0 dataset records them as being primarily nonviolent in the years in which they achieved success.
+
+```{r, Minority Nonviolent Victories, echo = F}
+MinWin <- NAVCO_EGC_VDEM  %>%
+  filter(prim_excl == 1, success == 1, prim_meth==1) %>%
+  select("ID"=id, "Campaign" = camp_name, "Country" = location, "Year" = year)
+
+MinWin%>% kable(caption = "Cases of Excluded Minority Nonviolent Success", longtable=TRUE) %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "7em") %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 8)
+
+
+```
+
+We test further by running models on our data that most closely approximate the modeling choices employed by M&M. We use linear probability models, and we use a set of control variables that most closely resembles those used by M&M. We present the models in the same pattern we have used throughout this paper and Appendix. The models based on only nonviolent and violent campaigns mirror what M&M used to create Figure 1A in their main text, while the model including the interaction term approximates Model 4 in Table A3 of their appendix.
+
+Using a regression modeling strategy that approximates M&M but using our updated data yields results that still align with our main findings. We see a statistically significant interaction term, confirming M&M's finding that politically privileged groups enjoy a greater bump in success rates when using nonviolent tactics as compared to violent in additive/percentage point terms. But we nevertheless see a positive and statistically significant coefficient for nonviolent tactics, signifying that even for politically excluded groups, the use of nonviolent tactics is associated with a 6 percentage point greater likelihood of success. This is the exact same marginal effect that we found for campaigns made up entirely of excluded groups in our main findings.
+
+The predicted probability plot based on this model looks very similar to those presented in the main text of this paper, despite using modeling and measurement strategies nearly identical to those of M&M. This leads us to the conclusion that the differences in our results are driven primarily by differences in the underlying data between the NAVCO 2.0 and 2.1 datasets, and not by differences in measurement or modeling strategies. (Note: the negative predicted probabilities for violent tactics are the result of using LPMs on data in which the outcome is rare.)
+
+```{r, MM Models, echo=FALSE, message=FALSE, warning=FALSE}
+
+NVMM <- lm(success~ + prim_egip + pop_share + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_clphy + prim_nv_years, data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==1 & NAVCO_EGC_VDEM$prim_irr ==0,])
+
+ViolMM <- lm(success~ prim_egip + pop_share + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_clphy + prim_viol_years, data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_meth==0 & NAVCO_EGC_VDEM$prim_irr ==0,])
+
+AllMM <- lm(success~ prim_meth + prim_egip + pop_share + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_clphy + success_spell + prim_nv_years + prim_viol_years, data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_irr ==0,])
+
+InterMM <- lm(success~ prim_meth * prim_egip + pop_share + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_clphy + prim_nv_years + prim_viol_years, data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$prim_irr ==0,])
+
+
+MMModels <- list(
+  "(1) Nonviolent" = NVMM,
+  "(2) Violent" = ViolMM,
+  "(3) All" = AllMM,
+  "(4) All w/ Interactions" = InterMM)
+
+
+MMTable <- modelsummary(MMModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_map = c("prim_meth1" = "Nonviolent",  "prim_egip" = "Plurality Incumbent", "prim_meth1:prim_egip" = "NV * Pl. Incumb.",  "pop_share" = "Population Share","prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "prim_nv_years" = "Past NV Part.", "prim_viol_years" = "Past Viol Part." ), title = "Models Approximating Manekin and Mitts (2022)", output = "kableExtra")
+
+MMTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+```{r, MM EV Plot, echo=F, fig.align = 'center', fig.cap = "Expected probabilities by ethnic power status and tactics."}
+
+MM_EVs <- ggeffect(InterMM, terms=c("prim_meth", "prim_egip")) %>%
+  mutate(Ethnicity = factor(ifelse(group == "1", "Non-Excluded" , "Excluded"), levels = c("Non-Excluded","Excluded")),
+         Dimension = "Ethnic Power Status",
+         Tactics = factor(ifelse(x==1, "Nonviolent", "Violent"), levels = c("Violent", "Nonviolent")))%>%
+  filter(!is.na(x))
+
+myColors3 <- c( "#7570B3","#7a9a01")
+
+MM_plot <- ggplot(MM_EVs, aes(x = Tactics, y = predicted, color = Ethnicity, group = Ethnicity)) +
+  geom_point(aes(color=Ethnicity, shape = Ethnicity), position = position_dodge(width = 0.4))+
+  geom_line(aes(color=Ethnicity), position = position_dodge(width = 0.4)) +
+  geom_errorbar(aes(color = Ethnicity), position = position_dodge(width = 0.4), width = 0, ymin=MM_EVs$conf.low, ymax=MM_EVs$conf.high) +
+  labs(x = "",
+         y = "Success",
+       color = "Ethnic Status",
+       shape = "Ethnic Status") +
+  ylim(-.05,0.25) +
+  ggtitle("") +
+  theme_bw() +
+  scale_shape_manual(values = c(15,17)) + 
+  scale_color_manual(values = myColors3)
+
+MM_plot
+```
+
+{{< pagebreak >}}
+
+## Radical Flank Models
+
+These are the full tabular results of the models depicted in Figure 4, disaggregating the nonviolent campaign-years into those in which NAVCO 2.1 codes violent flanks as present.
+
+```{r Partial Violence, echo=FALSE, message=FALSE, warning=FALSE}
+
+NAVCO_EGC_VDEM$tactics <- factor(NAVCO_EGC_VDEM$tactics, levels = c("Violent", "Nonviolent", "Hybrid"))
+
+Flanks_All <- glm(success~ tactics + Status3 + log(num_groups) + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Flanks_Int <- glm(success~ tactics * Status3 + tactics* log(num_groups) + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+FlankModels <- list(
+  "(1) All" = Flanks_All,
+  "(2) All w/ Interactions" = Flanks_Int)
+
+FlankTable <- modelsummary(FlankModels, stars = T, vcov = ~loc_cow, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("tacticsNonviolent" = "Nonviolent", "tacticsHybrid" = "Hybrid", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" , "any_claim" = "Ethnic Claim", "prim_meth1:log(num_groups)" = "NV * Groups", "tacticsNonviolent:Status3Incumbents" = "NV * Incumbent", "tacticsHybrid:Status3Incumbents" = "Hybrid * Incumbent", "tacticsNonviolent:Status3Mixed" = "NV * Mixed", "tacticsHybrid:Status3Mixed" = "Hybrid * Mixed", "tacticsNonviolent:log(num_groups)" = "NV * No. Groups", "tacticsHybrid:log(num_groups)" = "Hybrid * No. Groups" ,"pop_share" = "Population Share","prim_all_urb" = "Any Urban Group",  "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time spell", "I(success_spell^2)" = "Spell squared", "I(success_spell^3)" = "Spell Cubed" ), title = "Assessing Violent Flanks in Nonviolent Campaign-Years (Main Text Fig. 5)", output = "kableExtra")
+
+FlankTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 6)
+```
+
+## Partial Success Models
+
+These are the full tabular results of the models depicted in Figure 5. These models use binary re-codings of NAVCO 2.1's 'progress' variable as the dependent variable. Time spells are recalculated based on number of years since the last positive value of that level of progress.
+
+```{r Progress, echo=FALSE, message=FALSE, warning=FALSE}
+
+
+Significant <- glm(Significant~prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + progress_spell + I(progress_spell^2) + I(progress_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Limited <- glm(Limited~prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + progress_spell + I(progress_spell^2) + I(progress_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+Progress <- glm(Any_Progress~prim_meth + log(num_groups) + Status3 + pop_share + prim_all_urb + log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + progress_spell + I(progress_spell^2) + I(progress_spell^3), data =NAVCO_EGC_VDEM, family = binomial)
+
+##NOTE: clustered errors not working, I think, because 'Any_progress' has an underscore. Need to rename in the data wrangle file
+
+Progress <- list(
+  "(1) Full Success" = All,
+  "(2) Sig. Concessions" = Significant,
+  "(3) Lim. Concessions" = Limited,
+  "(4) Any Progress" = Progress)
+
+ProgressTable <- modelsummary(Progress, stars = T, gof_map = c("nobs", "aic", "logLik", "rmse"), notes = "Standard errors clustered by country", coef_rename = c("prim_meth1" = "Nonviolent", "num_groups" = "Number of Groups", "log(num_groups)" = "Number of Groups (log)", "Status3Incumbents" = "Status: All Incumbents", "Status3Mixed" = "Status: Mixed" ,  "prim_meth1:log(num_groups)" = "NV * Groups", "prim_meth1:CoalitionIncumbents" = "NV * Incumbent", "prim_meth1:CoalitionMixed" = "NV * Mixed", "pop_share" = "Population Share","prim_all_urb" = "Any Urban Group", "log(e_gdppc)" = "GDPpc", "log(e_pop)" = "Population", "v2x_polyarchy" = "Polyarchy", "v2x_cspart" = "Civil Society",  "v2x_egal" = "Egalitarian Index", "v2x_clphy" = "Repression", "success_spell" = "Time Spell", "I(success_spell^2)" = "Spell Squared", "I(success_spell^3)" = "Spell Cubed", "progress_spell" = "Time Spell", "I(progress_spell^2)" = "Spell Squared", "I(progress_spell^3)" = "Spell Cubed" ), title = "Assessing Lower Thresholds of Success (Main Text Fig. 6)",output = "kableExtra")
+
+ProgressTable %>%
+  kable_styling(latex_options = c("HOLD_position"), font_size = 8)
+
+```
+
+{{< pagebreak >}}
+
+## Sensitivity Analysis
+
+We run set of sensitivity analyses, using the sensemakr package, to gain a sense of how powerful omitted confounders would need to be to overturn our findings. We use the LPM models due to package constraints.
+
+Additionally, we opt not to use models with interaction terms as we believe doing so does not make sense. The sensitivity analysis tests for the effects of a potential confounder that is orthogonal to all covariates besides the IV and DV. In the interaction model, that would not be the case as other terms include the parts of the interaction term.
+
+In order to test the sensitivity of conditional effects observed in the main analyses, we instead subset the dataset by the conditional criteria (i.e. run separate models on the sets of violent and nonviolent campaigns years, or on each ethnic power status level). We run three sensitivity analyses aligning with each of our three main hypotheses.
+
+**Sensitivity Analysis for H1:**
+
+First, we assess the the sensitivity of observed correlation between power status and success. Among campaign-years when primarily nonviolent tactics are used, the original result is already not significant at the p\<.05 level, only the p\<0.1 level. The sensitivity analysis reveals that omitted confounding variables would need to explain more than 8% of the residual variance of both treatment and outcome to bring the coefficient for "All Incumbents" to zero.
+
+```{r, Sensitivity Analysis 1, echo = F}
+
+Inc_NVLPMSens <- sensemakr(model = NVLPM,
+                         treatment = "Status3Incumbents")
+
+Inc_NVLPMSens_SensStats <- Inc_NVLPMSens[["sensitivity_stats"]] %>%
+  mutate(Model = "Nonviolent Only")
+
+```
+
+Turning to the set of campaign-years using primarily violent tactics, we assess the sensitivity of the correlation between Incumbents and success. We find that omitted confounding variables would need to explain more than 7% of the residual variance of both treatment and outcome to bring the coefficient for number of groups to zero. Omitted confounding variables would need to explain more than 3% of the residual variances to make the correlation no longer statistically significant at the p \< 0.05 level.
+
+```{r, Sensitivity Analysis 2, echo = F}
+
+Inc_ViolLPMSens <- sensemakr(model = ViolLPM,
+                         treatment = "Status3Incumbents")
+
+Inc_ViolLPMSens_SensStats <- Inc_ViolLPMSens[["sensitivity_stats"]] %>%
+  mutate(Model = "Violent Only")
+
+
+```
+
+**Sensitivity Analysis for H2** Next, we assess the sensitivity of the correlation between nonviolent tactics and success across ethnic power status levels. While we are unable to run a sensitivity analysis directly on the interaction model as described above, we instead achieve the same goal by subsetting the data by ethnic power status. That is, we create distinct models for subsets of the data for the status levels of All Includeds, Mixed, and All Excluded. We then conduct a sensitivity analysis on the correlations between primarily nonviolent tactics and success across each of the three models.
+
+We find that omitted confounding variables would need to explain more than 16-23% of the residual variance of both treatment and outcome to bring the coefficient for nonviolent tactics to zero. Omitted confounding variables would need to explain more than 11-15% of the residual variances to make the correlation no longer statistically significant at the p \< 0.05 level.
+
+To provide context for what this would mean, we compare these figures to the variable in the model with the highest degree of correlation to both treatment and outcome: the log of a country's population. We find that omitted confounders would collectively need to be more than 5 times as correlated with both primary tactics and outcomes as country population in order to bring the observed correlation below conventional levels of statistical significance. We present this in Figure 2 for the condition of All Excluded groups, as the question of whether or not the observed advantage of nonviolent tactics holds under this condition is of the greatest theoretical importance.
+
+**Sensitivity Analysis 3:** Using the LPM model on the set of campaign-years using primarily nonviolent tactics, we assess the sensitivity of the correlation between the log number of participating ethnic groups and success. We find that omitted confounding variables would need to explain more than 15% of the residual variance of both treatment and outcome to bring the coefficient for number of groups to zero. Omitted confounding variables would need to explain more than 6% of the residual variances to make the correlation no longer statistically significant at the p \< 0.05 level.
+
+```{r, sensitivity analysis 3, echo = F}
+
+Div_NVLPMSens <- sensemakr(model = NVLPM,
+                         treatment = "log(num_groups)")
+
+Div_NVLPMSens_SensStats <- Div_NVLPMSens[["sensitivity_stats"]] %>%
+  mutate(Model = "Nonviolent Only")
+
+
+```
+
+```{r, sensitivity table, echo=F, warning = F}
+
+SILPM <- lm(success~ prim_meth + log(num_groups) + pop_share + prim_all_urb+ log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$Status3=="Incumbents",])
+
+Nonviol_SILPMSens <- sensemakr(model = SILPM,
+                         treatment = "prim_meth1",
+                         benchmark_covariates = "log(e_pop)",
+                         kd=c(1,3,5))
+
+Nonviol_SILPMSens_SensStats <- Nonviol_SILPMSens[["sensitivity_stats"]] %>%
+  mutate(Model = "Status: All Incumbents")
+
+SMLPM <- lm(success~ prim_meth + log(num_groups) + pop_share + prim_all_urb+ log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$Status3=="Mixed",])
+
+Nonviol_SMLPMSens <- sensemakr(model = SMLPM,
+                         treatment = "prim_meth1",
+                         benchmark_covariates = "log(e_pop)",
+                         kd=c(1,3,5))
+
+
+Nonviol_SMLPMSens_SensStats <- Nonviol_SMLPMSens[["sensitivity_stats"]] %>%
+  mutate(Model = "Status: Mixed")
+
+SELPM <- lm(success~ prim_meth + log(num_groups) + pop_share + prim_all_urb+ log(e_gdppc) + log(e_pop) + v2x_polyarchy + v2x_cspart + v2x_egal + v2x_clphy + success_spell + I(success_spell^2) + I(success_spell^3), data =NAVCO_EGC_VDEM[NAVCO_EGC_VDEM$Status3=="Excluded",])
+
+Nonviol_SELPMSens <- sensemakr(model = SELPM,
+                         treatment = "prim_meth1",
+                         benchmark_covariates = "log(e_pop)",
+                         kd=c(1,3,5))
+
+Nonviol_SELPMSens_SensStats <- Nonviol_SELPMSens[["sensitivity_stats"]] %>%
+  mutate(Model = "Status: All Excluded")
+
+SensStats <- bind_rows(Div_NVLPMSens_SensStats, Inc_NVLPMSens_SensStats, Inc_ViolLPMSens_SensStats, Nonviol_SILPMSens_SensStats, Nonviol_SMLPMSens_SensStats, Nonviol_SELPMSens_SensStats)%>%
+  select(Model, treatment:t_statistic, rv_q, rv_qa)
+
+kable(SensStats, caption = "Sensitivity Analyses")%>%
+  kable_styling(latex_options = c("HOLD_position"), font_size=8)
+
+
+
+
+```
+
+```{r, sensitivity plot, fig.align = 'center', fig.cap = "Sensitivity of t-statistic for relationship between nonviolent tactics and outcomes  to an unmeasured confounder 1x, 3x, and 5x, as correlated with each as country population.", fig.width= 6, echo=F}
+
+
+plot(Nonviol_SELPMSens, sensitivity.of = "t-value", main = "Status: All Excluded")
+```
+
+{{< pagebreak >}}
+
+## Case List
+
+The following lists all cases included in the analysis along with the codings of ethnic power status and number of participating ethnic groups. For ease of presentation, cases are grouped by continuous campaign-years with the same 'Status' coding, marked with the first and last year. Number of groups represents the largest number of participating groups in any year in the given period.
+
+```{r, Case List, echo=FALSE, warning=FALSE, message=FALSE}
+
+CaseList <- NAVCO_EGC_VDEM %>%
+  group_by(id, camp_name, location, Status3, prim_meth) %>%
+  summarize(From = min(year),
+            To = max(year),
+            Groups = max(num_groups)) %>%
+  rename("ID" = id, "Campaign" = camp_name, "Country" = location, "Status" = Status3) %>%
+  mutate(Tactics = case_when(prim_meth==1 ~ "Nonviolent", TRUE ~ "Violent")) %>%
+  select(Campaign, Country, From, To, Tactics, Status, Groups)
+
+Incumbents <- filter(CaseList, Status == "Incumbents")
+Mixed <- filter(CaseList, Status == "Mixed")
+Excluded <- filter(CaseList, Status == "Excluded")
+Missing <- filter(CaseList, is.na(Status))
+
+```
+
+### All Incumbents
+
+```{r, Incumbent List, echo=FALSE, warning=FALSE, message=FALSE}
+Incumbents %>% kable(caption = "Cases Coded as 'All Incumbents'", longtable=TRUE, table.attr = 'data-quarto-disable-processing="true"') %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "7em") %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 8)
+```
+
+{{< pagebreak >}}
+
+### Mixed Status (Incumbents and Excluded Groups)
+
+```{r, Mixed List, echo=FALSE, warning=FALSE, message=FALSE}
+Mixed %>% kable(caption = "Cases Coded as `Mixed'", longtable=TRUE) %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "7em") %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 8)
+```
+
+### All Excluded
+
+```{r, Excluded List, echo=FALSE, warning=FALSE, message=FALSE}
+Excluded %>% kable(caption = "Cases Coded as `All Excluded'", longtable=TRUE) %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "7em") %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 8)
+```
+
+### NAVCO Cases Not Included in the Analysis
+
+61 campaigns in the NAVCO 2.1 Dataset are not included in our analysis. In most cases, this is because they are anti-colonial campaigns in which "ethnic power status" is not applicable in the same sense (and EPR data is not even available). Other cases are due to countries not included in the EPR data collection effort.
+
+```{r, Missing List, echo=FALSE, warning=FALSE, message=FALSE}
+
+Missing %>% kable(caption = "Cases Not Included in the Analyses", longtable=TRUE) %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "7em") %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 8)
+```
+
+### Cases with Changes Over Time
+
+The following list shows all instances in which a campaign was observed to experience a change in its ethnic composition from one year to the next. We observed 74 such cases in the dataset, coming from within 38 different campaigns. With 384 campaigns in the dataset, this means that nearly 10% of campaigns experienced some change in ethnic composition.
+
+```{r, changes over time, echo = F}
+changes <- NAVCO_EGC_VDEM %>%
+  group_by(id) %>%
+  mutate(lag_groups = lag(num_groups),
+         change_groups = case_when(num_groups!=lag_groups~1, .default = 0)) %>%
+  filter(change_groups == 1) %>%
+  select("ID"=id, "Campaign" = camp_name, "Country" = location, "Year" = year)
+
+changes%>% kable(caption = "Cases of Changes in Campaign Ethnic Composition", longtable=TRUE) %>%
+  column_spec(2, width = "20em") %>%
+  column_spec(3, width = "7em") %>%
+  kable_styling(latex_options = c("hold_position", "repeat_header"), font_size = 8)
+
+
+
+
+
+
+```
+
+{{< pagebreak >}}
+
+## Software and Packages Used
+
+Arel-Bundock V (2022). "modelsummary: Data and Model Summaries in R." *Journal of Statistical Software*, *103*(1), 1-23. <https://doi.org/10.18637/jss.v103.i01>.
+
+Cinelli C, Ferwerda J, Hazlett C (2021). *sensemakr: Sensitivity Analysis Tools for Regression Models*. R package version 0.1.4, <https://CRAN.R-project.org/package=sensemakr>.
+
+Croissant Y, Millo G (2018). *Panel Data Econometrics with R*. Wiley. Croissant Y, Millo G (2008). "Panel Data Econometrics in R: The plm Package." *Journal of Statistical Software*, *27*(2), 1-43. <https://doi.org/10.18637/jss.v027.i02>.
+
+Millo G (2017). "Robust Standard Error Estimators for Panel Models: A Unifying Approach." *Journal of Statistical Software*, *82*(3), 1-27. [https://doi.org/10.18637/jss.v082.i03](#0){.uri}.
+
+Gandrud C, Williams L (2017). *pltesim: Simulate Probabilistic Long-Term Effects in Models with Temporal Dependence*. R package version 1.0, [https://CRAN.R-project.org/package=pltesim](#0){.uri}.
+
+Heinze G, Ploner M, Jiricka L, Steiner G (2023). *logistf: Firth's Bias-Reduced Logistic Regression*. R package version 1.26.0, [https://CRAN.R-project.org/package=logistf](#0){.uri}.
+
+Lüdecke D (2018). "ggeffects: Tidy Data Frames of Marginal Effects from Regression Models." *Journal of Open Source Software*, *3*(26), 772. doi:10.21105/joss.00772 [https://doi.org/10.21105/joss.00772](#0){.uri}.
+
+Makowski D, Lüdecke D, Patil I, Thériault R, Ben-Shachar M, Wiernik B (2023). "Automated Results Reporting as a Practical Tool to Improve Reproducibility and Methodological Best Practices Adoption." *CRAN*. [https://easystats.github.io/report/](#0){.uri}.
+
+R Core Team (2023). *R: A Language and Environment for Statistical Computing*. R Foundation for Statistical Computing, Vienna, Austria. [https://www.R-project.org/](#0){.uri}.-
+
+Stammann A, Heiss F, McFadden D (2016). "Estimating Fixed Effects Logit Models with Large Panel Data." *Working Paper*.
+
+Fernández-Val I (2009). "Fixed effects estimation of structural parameters and marginal effects in panel probit models." *Journal of Econometrics*, *150*(1), 71-85.
+
+Wickham H (2016). *ggplot2: Elegant Graphics for Data Analysis*. Springer-Verlag New York. ISBN 978-3-319-24277-4, [https://ggplot2.tidyverse.org](#0){.uri}.
+
+Wickham H, François R, Henry L, Müller K, Vaughan D (2023). *dplyr: A Grammar of Data Manipulation*. R package version 1.1.3, [https://CRAN.R-project.org/package=dplyr](#0){.uri}.
+
+Zhu H (2021). *kableExtra: Construct Complex Table with 'kable' and Pipe Syntax*. R package version 1.3.4, [https://CRAN.R-project.org/package=kableExtra](#0){.uri}.29
