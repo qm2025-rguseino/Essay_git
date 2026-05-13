@@ -1,0 +1,217 @@
+---
+title: "Modelling part"
+output: pdf_document
+date: "2026-05-13"
+---
+
+```{r setup, include=FALSE}
+p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra')
+packages <- rownames(installed.packages())
+p_to_install <- p_needed[!(p_needed %in% packages)]
+if (length(p_to_install) > 0) {
+  install.packages(p_to_install)
+}
+sapply(p_needed, require, character.only = TRUE)
+options(warn = -1)
+```
+
+```{r}
+# see datacollection.R
+# load the main dataframe
+df <- read.csv('datasources/df_essay.csv')
+```
+
+```{r}
+# create a dependent variables for a multinomial model
+df_final <- df %>%
+  mutate(
+    onset_type = case_when(
+      `NVC2.1_VIOL` == 1 ~ "Violent",
+      `NVC2.1_NONVIOL` == 1 ~ "Nonviolent",
+      TRUE ~ "No onset"
+    ),
+    onset_type = factor(
+      onset_type,
+      levels = c("No onset", "Nonviolent", "Violent")
+    )
+  )
+```
+
+```{r}
+# load functions for multinomial model simulations
+source('simulation_functions.R')
+```
+
+```{r}
+# estimate a two-way FE model (country-year) with lagged independent variables
+# to reduce reversed causality problems
+# the specifications includes discriminated population share and share of ethnic groups in power
+# controls: oilrents, GDP, GDP growth, executive corruption, democracy (quadratic term added), 
+# regime duration, GINI coefficient (disposable income)
+model <- multinom(
+  onset_type ~ growup_discrimpop_l + growup_egippop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+```
+
+
+```{r, results = 'asis'}
+#print a coefficient tables
+df_raw <- tidy(model, conf.int = FALSE) |>
+  dplyr::filter(!str_detect(term, "as.factor")) |>
+  dplyr::mutate(
+    term = dplyr::recode(term,
+      "growup_discrimpop_l"  = "Discriminated population share",
+      "growup_egippop_l"     = "EGI population share",
+      "log_oilrents_l"       = "Oil rents (log)",
+      "log_gdp_pcap_l"       = "GDP per capita (log)",
+      "pop_log_l"            = "Population (log)",
+      "gdp_growth_l"         = "GDP growth",
+      "v2x_execorr_l"        = "Executive corruption",
+      "v2x_polyarchy_l"      = "Polyarchy",
+      "I(v2x_polyarchy_l^2)" = "Polyarchy$^{2}$",
+      "log_v2regdur_l"       = "Regime duration (log)",
+      "swid_gini_disp_l"     = "Gini (disposable)"
+    ),
+    stars = dplyr::case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01  ~ "**",
+      p.value < 0.05  ~ "*",
+      TRUE            ~ ""
+    ),
+    coef = paste0(round(estimate, 3), stars),
+    se   = paste0("(", round(std.error, 3), ")")
+  )
+
+# Coefficient rows
+coef_rows <- df_raw |>
+  dplyr::select(term, y.level, coef) |>
+  tidyr::pivot_wider(names_from = y.level, values_from = coef)
+
+# SE rows — blank term label
+se_rows <- df_raw |>
+  dplyr::select(term, y.level, se) |>
+  tidyr::pivot_wider(names_from = y.level, values_from = se) |>
+  dplyr::mutate(term = "")
+
+# Interleave: coef row then SE row for each variable
+result <- dplyr::bind_rows(
+  coef_rows |> dplyr::mutate(ord = (dplyr::row_number() - 1) * 2 + 1),
+  se_rows   |> dplyr::mutate(ord = (dplyr::row_number() - 1) * 2 + 2)
+) |>
+  dplyr::arrange(ord) |>
+  dplyr::select(-ord)
+
+# Table
+result |>
+  kable(
+    format    = "latex",
+    booktabs  = TRUE,
+    escape    = FALSE,
+    linesep   = "",                        # remove automatic row spacing    
+    col.names = c("", "Nonviolent", "Violent"),
+    caption   = "Multinomial logit estimates"
+  ) |>
+  kable_styling(
+    latex_options = c("hold_position", "scale_down"),
+    font_size = 10
+  ) |>
+  footnote(
+  general = c(
+    "Country and year fixed effects included.",
+    "All independent variables are one year lagged",
+    "Standard errors in parentheses.",
+    "* p<0.05, ** p<0.01, *** p<0.001"
+  ),
+    escape  = FALSE
+  )
+```
+
+
+```{r}
+#extract the variance-covariance table
+vcov_multinom <- vcov(model)
+```
+
+```{r}
+# Simulate expected probabilities of non-onsets, violent-nonviolent onsets
+# with an observed values approach
+# by the values of discriminated population share
+# the chunk uses sim_function from the simulation_functions.R
+X         <- model.matrix(model)
+col_idx   <- which(colnames(X) == "growup_discrimpop_l")
+K_minus_1 <- nrow(coef(model))
+coefs_vec <- as.vector(t(coef(model)))
+cat_names <- c(
+  levels(df_final$onset_type)[1],   # reference category
+  rownames(coef(model))             # K-1 non-reference categories
+)
+
+xseq <- seq(
+  quantile(df_final$growup_discrimpop_l, 0.01, na.rm = TRUE),
+  quantile(df_final$growup_discrimpop_l, 0.99, na.rm = TRUE),
+  length.out = 20
+)
+
+ova_results <- lapply(xseq, function(x_val) {
+  
+  # OVA: substitute x_val, keep all other covariates at observed values
+  X_mod            <- X
+  X_mod[, col_idx] <- x_val
+  
+  sim_out <- sim_function(
+    seed      = 666,
+    nsim      = 1000,
+    coefs     = coefs_vec,
+    vcov      = vcov_multinom,
+    scenario  = X_mod,          # full observed dataset
+    K_minus_1 = K_minus_1
+  )
+  
+  ev <- sim_out$ev  # [nsim x K]
+  
+  data.frame(
+    x_val    = x_val,
+    category = cat_names,
+    ev_mean  = colMeans(ev),
+    ev_lo    = apply(ev, 2, quantile, 0.025),
+    ev_hi    = apply(ev, 2, quantile, 0.975)
+  )
+})
+
+results_df <- do.call(rbind, ova_results)
+```
+
+```{r}
+#results_df
+```
+
+```{r, fig.cap = 'Expected probabilities of event type by the values of discriminated population share', fig.align = 'center', fig.dim = c(8,4), echo = FALSE, message = FALSE, warning = FALSE}
+#plot the results
+# The main finding is for violent - the increase in the discriminated population share increases
+# the likelihood of a violent maximalist campaign onset from 0.01 to 0.14 (there are 0.02 of violent events in the dataset)
+ggplot(results_df, aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "Discriminated population share", y = "Avg. predicted probability") +
+  theme_bw()
+```
+
+```{r, fig.cap = 'Expected probabilities of event type by the values of discriminated population share - one plot', fig.align = 'center', fig.dim = c(8,4), echo = FALSE, message = FALSE, warning = FALSE}
+#plot in one grah - does not look so nice
+ggplot(results_df, aes(x = x_val, y = ev_mean, color = category, fill = category)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1, color = NA) +
+  labs(
+    x     = "Discriminated population share",
+    y     = "Avg. predicted probability",
+    color = "Onset type",
+    fill  = "Onset type"
+  ) +
+  theme_bw()
+```
+
