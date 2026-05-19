@@ -48,3 +48,93 @@ sim_function <- function(seed = 666,
   }
   return(list(ev = ev))
 }
+
+simulate_predictions <- function(
+    model,
+    data,
+    focal_var,
+    outcome_var,
+    vcov_mat,
+    moderator_var  = NULL,
+    moderator_vals = NULL,
+    nsim           = 1000,
+    seed           = 666,
+    length_out     = 20,
+    probs_seq      = c(0.01, 0.99)
+) {
+  
+  X         <- model.matrix(model)
+  col_idx   <- which(colnames(X) == focal_var)
+  K_minus_1 <- nrow(coef(model))
+  coefs_vec <- as.vector(t(coef(model)))
+  cat_names <- c(
+    levels(data[[outcome_var]])[1],
+    rownames(coef(model))
+  )
+  
+  xseq <- seq(
+    quantile(data[[focal_var]], probs_seq[1], na.rm = TRUE),
+    quantile(data[[focal_var]], probs_seq[2], na.rm = TRUE),
+    length.out = length_out
+  )
+  
+  # --- Interaction setup ---
+  if (!is.null(moderator_var)) {
+    col_mod <- which(colnames(X) == moderator_var)
+    
+    inter_name <- if (paste0(focal_var, ":", moderator_var) %in% colnames(X)) {
+      paste0(focal_var, ":", moderator_var)
+    } else {
+      paste0(moderator_var, ":", focal_var)
+    }
+    col_inter <- which(colnames(X) == inter_name)
+    mod_levels <- moderator_vals          # use as actual values directly
+  } else {
+    mod_levels <- list(NULL)
+  }
+  
+  # --- Loop over moderator levels ---
+  results <- lapply(seq_along(mod_levels), function(m) {
+    
+    mod_val   <- mod_levels[[m]]
+    mod_label <- if (!is.null(moderator_var)) names(mod_levels)[m] else NA
+    
+    lapply(xseq, function(x_val) {
+      
+      X_mod            <- X
+      X_mod[, col_idx] <- x_val
+      
+      if (!is.null(moderator_var)) {
+        X_mod[, col_mod]   <- mod_val
+        X_mod[, col_inter] <- x_val * mod_val
+      }
+      
+      cat("\n--- x_val =", round(x_val, 3),
+          if (!is.null(moderator_var)) paste0("| ", moderator_var, " = ", round(mod_val, 3)),
+          "---\n")
+      
+      sim_out <- sim_function(
+        seed      = seed,
+        nsim      = nsim,
+        coefs     = coefs_vec,
+        vcov      = vcov_mat,
+        scenario  = X_mod,
+        K_minus_1 = K_minus_1
+      )
+      
+      ev <- sim_out$ev
+      
+      data.frame(
+        x_val         = x_val,
+        category      = cat_names,
+        ev_mean       = colMeans(ev),
+        ev_lo         = apply(ev, 2, quantile, 0.025),
+        ev_hi         = apply(ev, 2, quantile, 0.975),
+        moderator_val = if (!is.null(moderator_var)) mod_label else NA
+      )
+    }) |> do.call(what = rbind)
+    
+  }) |> do.call(what = rbind)
+  
+  results
+}

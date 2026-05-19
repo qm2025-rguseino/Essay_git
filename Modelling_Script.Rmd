@@ -9,7 +9,7 @@ p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broo
 packages <- rownames(installed.packages())
 p_to_install <- p_needed[!(p_needed %in% packages)]
 if (length(p_to_install) > 0) {
-  install.packages(p_to_install)
+  install.packages(p_to_install) 
 }
 sapply(p_needed, require, character.only = TRUE)
 options(warn = -1)
@@ -48,8 +48,29 @@ source('simulation_functions.R')
 # the specifications includes discriminated population share and share of ethnic groups in power
 # controls: oilrents, GDP, GDP growth, executive corruption, democracy (quadratic term added), 
 # regime duration, GINI coefficient (disposable income)
-model <- multinom(
+model <- multinom( #test the hypothesis of the discriminated groups share effect
   onset_type ~ growup_discrimpop_l + growup_egippop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+model2 <- multinom( #test the interaction effect hypothesis
+  onset_type ~ growup_discrimpop_l  * growup_egippop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+model3 <- multinom( #test the hypothesis of the excluded groups count effect
+  onset_type ~ growup_excl_groups_count_l + growup_egip_groups_count_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+model4 <- multinom( #test the interaction effect hypothesis
+  onset_type ~ growup_excl_groups_count_l * growup_egip_groups_count_l +
     log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
     log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
@@ -134,56 +155,18 @@ result |>
 ```{r}
 #extract the variance-covariance table
 vcov_multinom <- vcov(model)
+vcov_multinom2 <- vcov(model2)
+vcov_multinom3 <- vcov(model3)
+vcov_multinom4 <- vcov(model4)
 ```
 
 ```{r}
-# Simulate expected probabilities of non-onsets, violent-nonviolent onsets
-# with an observed values approach
-# by the values of discriminated population share
-# the chunk uses sim_function from the simulation_functions.R
-X         <- model.matrix(model)
-col_idx   <- which(colnames(X) == "growup_discrimpop_l")
-K_minus_1 <- nrow(coef(model))
-coefs_vec <- as.vector(t(coef(model)))
-cat_names <- c(
-  levels(df_final$onset_type)[1],   # reference category
-  rownames(coef(model))             # K-1 non-reference categories
-)
-
-xseq <- seq(
-  quantile(df_final$growup_discrimpop_l, 0.01, na.rm = TRUE),
-  quantile(df_final$growup_discrimpop_l, 0.99, na.rm = TRUE),
-  length.out = 20
-)
-
-ova_results <- lapply(xseq, function(x_val) {
-  
-  # OVA: substitute x_val, keep all other covariates at observed values
-  X_mod            <- X
-  X_mod[, col_idx] <- x_val
-  
-  sim_out <- sim_function(
-    seed      = 666,
-    nsim      = 1000,
-    coefs     = coefs_vec,
-    vcov      = vcov_multinom,
-    scenario  = X_mod,          # full observed dataset
-    K_minus_1 = K_minus_1
-  )
-  
-  ev <- sim_out$ev  # [nsim x K]
-  
-  data.frame(
-    x_val    = x_val,
-    category = cat_names,
-    ev_mean  = colMeans(ev),
-    ev_lo    = apply(ev, 2, quantile, 0.025),
-    ev_hi    = apply(ev, 2, quantile, 0.975)
-  )
-})
-
-results_df <- do.call(rbind, ova_results)
+results_df <- simulate_predictions(model = model, data = df_final, focal_var = 'growup_discrimpop_l', outcome_var = 'onset_type', vcov_mat = vcov_multinom)
+results_df2 <- simulate_predictions(model = model2, data = df_final, focal_var = 'growup_discrimpop_l', outcome_var = 'onset_type', vcov_mat = vcov_multinom2, moderator_var  = "growup_egippop_l", moderator_vals = quantile(df_final$growup_egippop_l, c(0.1, 0.9), na.rm=TRUE))
+results_df3 <- simulate_predictions(model = model3, data = df_final, focal_var = 'growup_excl_groups_count_l', outcome_var = 'onset_type', vcov_mat = vcov_multinom3)
+results_df4 <- simulate_predictions(model = model4, data = df_final, focal_var = 'growup_excl_groups_count_l', outcome_var = 'onset_type', vcov_mat = vcov_multinom4, moderator_var = 'growup_egip_groups_count_l', moderator_vals = quantile(df_final$growup_egip_groups_count_l, c(0.1, 0.9), na.rm=TRUE))
 ```
+
 
 ```{r}
 #results_df
@@ -193,17 +176,51 @@ results_df <- do.call(rbind, ova_results)
 #plot the results
 # The main finding is for violent - the increase in the discriminated population share increases
 # the likelihood of a violent maximalist campaign onset from 0.01 to 0.14 (there are 0.02 of violent events in the dataset)
-ggplot(results_df, aes(x = x_val, y = ev_mean)) +
+ggplot(results_df %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
   geom_line() +
   geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
   facet_wrap(~category) +
   labs(x = "Discriminated population share", y = "Avg. predicted probability") +
   theme_bw()
+
+ggplot(results_df2 %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean, color = moderator_val, fill = moderator_val)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "Discriminated population share", y = "Avg. predicted probability", color = "EGI groups (low/high)",
+    fill  = "EGI groups (low/high)") +
+  theme_bw()
+
+ggplot(results_df3 %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "Discriminated population share", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_df4 %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean, color = moderator_val, fill = moderator_val)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "Discriminated population share", y = "Avg. predicted probability", color = "EGI groups (low/high)",
+    fill  = "EGI groups (low/high)") +
+  theme_bw()
 ```
+
+```{r}
+ggplot(results_df2 %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean, color = moderator_val, fill = moderator_val)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category + moderator_val) +
+  labs(x = "Discriminated population share", y = "Avg. predicted probability", color = "EGI groups (low/high)",
+    fill  = "EGI groups (low/high)") +
+  theme_bw()
+```
+
 
 ```{r, fig.cap = 'Expected probabilities of event type by the values of discriminated population share - one plot', fig.align = 'center', fig.dim = c(8,4), echo = FALSE, message = FALSE, warning = FALSE}
 #plot in one grah - does not look so nice
-ggplot(results_df, aes(x = x_val, y = ev_mean, color = category, fill = category)) +
+ggplot(results_df %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean, color = category, fill = category)) +
   geom_line() +
   geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1, color = NA) +
   labs(
@@ -211,6 +228,83 @@ ggplot(results_df, aes(x = x_val, y = ev_mean, color = category, fill = category
     y     = "Avg. predicted probability",
     color = "Onset type",
     fill  = "Onset type"
+  ) +
+  theme_bw()
+```
+```{r}
+model2 <- multinom(
+  onset_type ~ growup_discrimpop_l * growup_egippop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+```
+
+```{r}
+X         <- model.matrix(model)
+col_discr <- which(colnames(X) == "growup_discrimpop_l")
+col_egi   <- which(colnames(X) == "growup_egippop_l")
+col_inter <- which(colnames(X) == "growup_discrimpop_l:growup_egippop_l")
+
+egi_vals <- quantile(df_final$growup_egippop_l, 
+                     c(0.1, 0.9), na.rm = TRUE)
+
+xseq <- seq(
+  quantile(df_final$growup_discrimpop_l, 0.01, na.rm = TRUE),
+  quantile(df_final$growup_discrimpop_l, 0.99, na.rm = TRUE),
+  length.out = 20
+)
+
+K_minus_1 <- nrow(coef(model))
+coefs_vec <- as.vector(t(coef(model)))
+
+ova_results <- lapply(names(egi_vals), function(egi_label) {
+  egi_val <- egi_vals[egi_label]
+  
+  lapply(xseq, function(x_val) {
+    
+    # OVA: substitute focal variable and moderator, update interaction
+    X_mod                <- X
+    X_mod[, col_discr]   <- x_val
+    X_mod[, col_egi]     <- egi_val
+    X_mod[, col_inter]   <- x_val * egi_val   # critical: update interaction term
+    
+    sim_out <- sim_function(
+      seed      = 666,
+      nsim      = 1000,
+      coefs     = coefs_vec,
+      vcov      = vcov_multinom,
+      scenario  = X_mod,
+      K_minus_1 = K_minus_1
+    )
+    s
+    ev <- sim_out$ev   # [nsim x K]
+    
+    data.frame(
+      x_val     = x_val,
+      egi_level = egi_label,         # "10%", "50%", "90%"
+      category  = cat_names,
+      ev_mean   = colMeans(ev),
+      ev_lo     = apply(ev, 2, quantile, 0.025),
+      ev_hi     = apply(ev, 2, quantile, 0.975)
+    )
+  }) |> dplyr::bind_rows()
+  
+}) |> dplyr::bind_rows()
+```
+
+```{r}
+ggplot(ova_results, aes(x = x_val, y = ev_mean, 
+                         color = egi_level, fill = egi_level)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1, color = NA) +
+  facet_wrap(~category) +
+  labs(
+    x     = "Discriminated population share",
+    y     = "Avg. predicted probability",
+    color = "EGI share percentile",
+    fill  = "EGI share percentile"
   ) +
   theme_bw()
 ```
