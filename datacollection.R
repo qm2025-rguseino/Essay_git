@@ -118,7 +118,7 @@ df_final <- df_comb %>%
       growup_egip_groups_count == 0 ~ "No EGIP group",
       growup_egip_groups_count == 1 ~ "Single-group elite",
       growup_egip_groups_count >= 2 ~ "Multi-group elite"
-    ),
+    ), #add a variable on elite structure
     elite_structure = factor(
       elite_structure,
       levels = c("Multi-group elite", "Single-group elite", "No EGIP group")
@@ -127,7 +127,7 @@ df_final <- df_comb %>%
       growup_egip_groups_count == 1 ~ 1,
       growup_egip_groups_count >= 2 ~ 0,
       TRUE ~ NA_real_ #if EGIP == 0 -> NA
-    ),
+    ), #another measurement of single-elite groups
     log_oilrents_l = dplyr::lag(log_oilrents, n = 1),
     log_gdp_pcap_l = dplyr::lag(log_gdp_pcap, n = 1),
     gdp_growth_l = dplyr::lag(gdp_growth, n = 1),
