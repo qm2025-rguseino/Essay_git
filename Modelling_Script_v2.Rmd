@@ -1,0 +1,357 @@
+---
+title: "Modelling_Testing_Script"
+output: html_document
+date: "2026-05-23"
+---
+
+```{r setup, include=FALSE}
+p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra')
+packages <- rownames(installed.packages())
+p_to_install <- p_needed[!(p_needed %in% packages)]
+if (length(p_to_install) > 0) {
+  install.packages(p_to_install) 
+}
+sapply(p_needed, require, character.only = TRUE)
+options(warn = -1)
+```
+
+```{r}
+# see datacollection.R
+# load the main dataframe
+#df_final <- read.csv('datasources/df_essay.csv')
+df_final <- readRDS('datasources/df_essay.rds')
+```
+
+```{r}
+source('simulation_functions.R')
+```
+
+
+```{r}
+#TWO-WAY FE
+# Preliminary results - do not test with the linear count (at least log it)
+# 
+model_h1_count_log <- multinom(
+  onset_type ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+model_h1_share <- multinom(
+  onset_type ~ epr_egippop_l + epr_exclpop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+model_h1_lshare <- multinom(
+  onset_type ~ epr_legippop_l + epr_lexclpop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+model_h1_lshare <- multinom(
+  onset_type ~ epr_legippop_l + epr_lexclpop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+model_h1_alonerule_count <- multinom(
+  onset_type ~ epr_alonerule_groups_count_l + epr_excl_groups_count_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+model_h1_alonerule_pop <- multinom(
+  onset_type ~ epr_alonerulepop_l + epr_exclpop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+```
+
+```{r}
+#Estimate EGIPs
+results_model_h1_count_log_egip <- simulate_predictions(model = model_h1_count_log, 
+                                               data = df_final, 
+                                               focal_var = 'log_epr_egip_groups_count_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_count_log), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_share_egip <- simulate_predictions(model = model_h1_share, 
+                                               data = df_final, 
+                                               focal_var = 'epr_egippop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_share), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_lshare_egip <- simulate_predictions(model = model_h1_lshare, 
+                                               data = df_final, 
+                                               focal_var = 'epr_legippop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_lshare), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_alonerule_count_egip <- simulate_predictions(model = model_h1_alonerule_count, 
+                                               data = df_final, 
+                                               focal_var = 'epr_alonerule_groups_count_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_alonerule_count), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_alonerule_pop_egip <- simulate_predictions(model = model_h1_alonerule_pop, 
+                                               data = df_final, 
+                                               focal_var = 'epr_alonerulepop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_alonerule_pop), 
+                                               probs_seq = c(0.1, 1))
+
+#Estimate MEGs
+results_model_h1_count_log_excl <- simulate_predictions(model = model_h1_count_log, 
+                                               data = df_final, 
+                                               focal_var = 'log_epr_excl_groups_count_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_count_log), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_share_excl <- simulate_predictions(model = model_h1_share, 
+                                               data = df_final, 
+                                               focal_var = 'epr_exclpop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_share), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_lshare_excl <- simulate_predictions(model = model_h1_lshare, 
+                                               data = df_final, 
+                                               focal_var = 'epr_lexclpop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_lshare), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_alonerule_count_excl <- simulate_predictions(model = model_h1_alonerule_count, 
+                                               data = df_final, 
+                                               focal_var = 'epr_excl_groups_count_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_alonerule_count), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_alonerule_pop_excl <- simulate_predictions(model = model_h1_alonerule_pop, 
+                                               data = df_final, 
+                                               focal_var = 'epr_exclpop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_alonerule_pop), 
+                                               probs_seq = c(0.1, 1))
+```
+
+```{r}
+ggplot(results_model_h1_count %>% dplyr::filter(category %in% c('Nonviolent', 'Violent'), 
+                                          x_val <= log(14 + 1)), 
+       aes(x = exp(x_val), y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  scale_x_continuous(breaks = 0:14) + 
+  labs(x = "epr_egip_groups_count_l", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_model_h1_count_log %>% dplyr::filter(category %in% c('Nonviolent', 'Violent'), 
+                                          x_val <= log(14 + 1)), 
+       aes(x = exp(x_val), y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  scale_x_continuous(breaks = 0:14) + 
+  labs(x = "log_epr_egip_groups_count_l", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_model_h1_count_noexcl %>% dplyr::filter(category %in% c('Nonviolent', 'Violent'), 
+                                          x_val <= log(14 + 1)), 
+       aes(x = exp(x_val), y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  scale_x_continuous(breaks = 0:14) + 
+  labs(x = "epr_egip_groups_count_l", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_model_h1_share %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  #geom_point() + 
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "epr_egippop_l", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_model_h1_lshare %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  #geom_point() + 
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "epr_legippop_l", y = "Avg. predicted probability") +
+  theme_bw()
+```
+```{r}
+ggplot(results_model_h1_count_log %>% dplyr::filter(category %in% c('Nonviolent', 'Violent'), 
+                                          x_val <= log(14 + 1)), 
+       aes(x = exp(x_val), y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  scale_x_continuous(breaks = 0:14) + 
+  labs(x = "log_growup_egip_groups_count_l", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_model_h1_share %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  #geom_point() + 
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "growup_egippop_l", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_model_h1_lshare %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  #geom_point() + 
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "growup_legippop_l", y = "Avg. predicted probability") +
+  theme_bw()
+```
+
+```{r}
+#simulate two predicted probabilities - EGIP and MEG
+#on one graph
+results_model_h1_count_log_egip <- simulate_predictions(model = model_h1_count_log, 
+                                               data = model.frame(model_h1_count_log), 
+                                               focal_var = 'log_growup_egip_groups_count_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_count_log), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_count_log_excl <- simulate_predictions(model = model_h1_count_log, 
+                                               data = model.frame(model_h1_count_log), 
+                                               focal_var = 'log_growup_excl_groups_count_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_count_log), 
+                                               probs_seq = c(0.1, 1))
+
+results_combined <- bind_rows(
+  results_model_h1_count_log_egip %>% mutate(variable = "EGIP groups"),
+  results_model_h1_count_log_excl %>% mutate(variable = "Excluded groups")
+)
+
+ggplot(
+  results_combined %>% 
+    filter(category %in% c('Nonviolent', 'Violent'),
+           x_val <= log(14 + 1)),
+  aes(x = exp(x_val), y = ev_mean, color = variable, fill = variable)
+) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1, color = NA) +
+  facet_wrap(~category) +
+  scale_x_continuous(breaks = 0:14) +
+  scale_color_manual(values = c("EGIP groups" = "#2C3E50", 
+                                 "Excluded groups" = "#E74C3C")) +
+  scale_fill_manual(values = c("EGIP groups" = "#2C3E50", 
+                                "Excluded groups" = "#E74C3C")) +
+  labs(x = "Group count (raw scale)", 
+       y = "Avg. predicted probability",
+       color = NULL, fill = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+```{r}
+#simulate two predicted probabilities - EGIP and MEG
+#on one graph
+results_model_h1_share_egip <- simulate_predictions(model = model_h1_share, 
+                                               data = df_final, 
+                                               focal_var = 'epr_egippop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_share), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_share_excl <- simulate_predictions(model = model_h1_share, 
+                                               data = df_final, 
+                                               focal_var = 'epr_exclpop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_h1_share), 
+                                               probs_seq = c(0.1, 1))
+
+results_combined <- bind_rows(
+  results_model_h1_share_egip %>% mutate(variable = "EGIP groups"),
+  results_model_h1_share_excl %>% mutate(variable = "Excluded groups")
+)
+
+ggplot(
+  results_combined %>% 
+    filter(category %in% c('Nonviolent', 'Violent'),
+           x_val <= log(14 + 1)),
+  aes(x = x_val, y = ev_mean, color = variable, fill = variable)
+) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1, color = NA) +
+  facet_wrap(~category) +
+  #scale_x_continuous(breaks = 0:14) +
+  scale_color_manual(values = c("EGIP groups" = "#2C3E50", 
+                                 "Excluded groups" = "#E74C3C")) +
+  scale_fill_manual(values = c("EGIP groups" = "#2C3E50", 
+                                "Excluded groups" = "#E74C3C")) +
+  labs(x = "Group count (raw scale)", 
+       y = "Avg. predicted probability",
+       color = NULL, fill = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+model_discrimpop <- multinom( #test the hypothesis of the discriminated groups share effect
+  onset_type ~ growup_discrimpop_l + growup_egippop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+results_model_h1_share_egip <- simulate_predictions(model = model_discrimpop, 
+                                               data = df_final, 
+                                               focal_var = 'growup_egippop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_discrimpop), 
+                                               probs_seq = c(0.1, 1))
+results_model_h1_share_discrimpop <- simulate_predictions(model = model_discrimpop, 
+                                               data = df_final, 
+                                               focal_var = 'growup_discrimpop_l',
+                                               outcome_var = 'onset_type', 
+                                               vcov_mat = vcov(model_discrimpop), 
+                                               probs_seq = c(0.1, 1))
+
+results_combined <- bind_rows(
+  results_model_h1_share_egip %>% mutate(variable = "EGIP groups"),
+  results_model_h1_share_discrimpop %>% mutate(variable = "Discriminated groups")
+)
+
+ggplot(
+  results_combined %>% 
+    filter(category %in% c('Nonviolent', 'Violent')),
+  aes(x = x_val, y = ev_mean, color = variable, fill = variable)
+) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1, color = NA) +
+  facet_wrap(~category) +
+  #scale_x_continuous(breaks = 0:14) +
+  scale_color_manual(values = c("EGIP groups" = "#2C3E50", 
+                                 "Discriminated groups" = "#E74C3C")) +
+  scale_fill_manual(values = c("EGIP groups" = "#2C3E50", 
+                                "Discriminated groups" = "#E74C3C")) +
+  labs(x = "Group count (raw scale)", 
+       y = "Avg. predicted probability",
+       color = NULL, fill = NULL) +
+  theme_bw() +
+  theme(legend.position = "bottom")
+```
+
+```{r}
+EPR <- read.csv('https://icr.ethz.ch/data/epr/core/EPR-2021.csv')
+```
+

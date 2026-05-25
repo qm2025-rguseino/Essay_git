@@ -33,13 +33,20 @@ NAVCO2.1_regr_extended <- read.csv("datasources/NAVCO2_1_regr_extended_v3.csv", 
 nrow(NAVCO2.1_regr_extended) # 554 events
 
 # GROWup with ethnic groups data
-growup <- read.csv('datasources/GROWUPdata2.csv') %>% 
-  mutate(cow = countrycode(countries_gwid, origin = "gwn", destination = "cown",
-                           custom_match = c("816" = 816L, "340" = 345L))) %>% 
+# growup <- read.csv('datasources/GROWUPdata2.csv') %>% 
+#   mutate(cow = countrycode(countries_gwid, origin = "gwn", destination = "cown",
+#                            custom_match = c("816" = 816L, "340" = 345L))) %>% 
+#   drop_na(cow) %>% 
+#   rename_with(~ paste0("growup_", .), .cols = 4:ncol(growup)) %>% 
+#   dplyr::select(!c(countries_gwid, countryname))
+# growup <- growup[!duplicated(growup[c('cow', 'year')]), ]
+
+## EPR ethnic groups data
+EPR <- read.csv('datasources/EPR_panel.csv') %>% 
+  rename_with(~ paste0("epr_", .), .cols = 3:ncol(EPR)) %>% 
+  mutate(cow = countrycode(statename, 'country.name', 'cown')) %>% 
   drop_na(cow) %>% 
-  rename_with(~ paste0("growup_", .), .cols = 4:ncol(growup)) %>% 
-  select(!c(countries_gwid, countryname))
-growup <- growup[!duplicated(growup[c('cow', 'year')]), ]
+  dplyr::select(!c(statename))  
 
 states <- build_states_panel(
   start_year = 1946,
@@ -95,7 +102,8 @@ vdem_vars <- vdem %>%
 #combine a dataset 
 dfs <- list(
   states,
-  growup,
+  #growup,
+  EPR,
   vdem_vars,
   population,
   youth,
@@ -111,21 +119,46 @@ df_comb <- Reduce(function(x, y) {
 #Add a single-grpup elite variable
 #lag the egip groups
 df_final <- df_comb %>% 
+  mutate(year = as.numeric(as.character(year))) %>%  # ← первым делом
   arrange(cow, year) %>%
   group_by(cow) %>% 
+  mutate(
+    onset_type = case_when(          # ← сначала onset_type
+      `NVC2.1_VIOL` == 1 ~ "Violent",
+      `NVC2.1_NONVIOL` == 1 ~ "Nonviolent",
+      TRUE ~ "No onset"
+    ),
+    onset_type = factor(
+      onset_type,
+      levels = c("No onset", "Nonviolent", "Violent")
+    ),
+    any_campaign = as.integer(onset_type != "No onset"),
+    last_campaign_year = ifelse(any_campaign == 1, year, NA),
+    last_campaign_year = zoo::na.locf(last_campaign_year, na.rm = FALSE),
+    peace_years = ifelse(
+      is.na(last_campaign_year),
+      year - min(year),
+      year - last_campaign_year
+    ),
+    peace_years_l = dplyr::lag(peace_years, n = 1)
+  ) %>%
+  ungroup() %>%   # ← добавь здесь
+  mutate_at(vars(starts_with('NVC2.1_')),
+            ~replace_na(., 0)) %>% 
+  group_by(cow) %>%        # ← добавь перед лагами
   dplyr::mutate(
     elite_structure = case_when(
-      growup_egip_groups_count == 0 ~ "No EGIP group",
-      growup_egip_groups_count == 1 ~ "Single-group elite",
-      growup_egip_groups_count >= 2 ~ "Multi-group elite"
+      epr_egip_groups_count == 0 ~ "No EGIP group",
+      epr_egip_groups_count == 1 ~ "Single-group elite",
+      epr_egip_groups_count >= 2 ~ "Multi-group elite"
     ), #add a variable on elite structure
     elite_structure = factor(
       elite_structure,
       levels = c("Multi-group elite", "Single-group elite", "No EGIP group")
     ),
     single_group_elite = case_when(
-      growup_egip_groups_count == 1 ~ 1,
-      growup_egip_groups_count >= 2 ~ 0,
+      epr_egip_groups_count == 1 ~ 1,
+      epr_egip_groups_count >= 2 ~ 0,
       TRUE ~ NA_real_ #if EGIP == 0 -> NA
     ), #another measurement of single-elite groups
     log_oilrents_l = dplyr::lag(log_oilrents, n = 1),
@@ -133,32 +166,59 @@ df_final <- df_comb %>%
     gdp_growth_l = dplyr::lag(gdp_growth, n = 1),
     pop_log = log(pop+0.01), 
     pop_log_l = dplyr::lag(pop_log, n = 1),
-    year = as.numeric(year),
     v2x_polyarchy_l = dplyr::lag(v2x_polyarchy, n = 1),
     v2x_execorr_l = dplyr::lag(v2x_execorr, n = 1),
     log_v2regdur_l = dplyr::lag(log_v2regdur, n = 1),
     youthbulge_l = dplyr::lag(youthbulge, n = 1),
     swid_gini_disp_l = dplyr::lag(swid_gini_disp, n = 1),
     region = countrycode(cow, 'cown', 'region'),
-    period = factor(floor((year - 1946) / 10) + 1)) %>% 
-  mutate_at(vars(starts_with('NVC2.1_')),
-            ~replace_na(., 0)) %>% 
+    period = factor(floor((year - 1946) / 10) + 1),
+    log_peace_years_l = log(peace_years_l + 0.1)) %>% 
   mutate(across(
-    starts_with("growup_"),
+    starts_with("epr_"),
     ~ lag(., n = 1),
     .names = "{.col}_l"
   )) %>% 
-  mutate(log_growup_excl_groups_count_l = log(growup_excl_groups_count_l+1),
-         log_growup_egip_groups_count_l = log(growup_egip_groups_count_l + 1),
-         log_growup_oil_giant_fields_count_l = log(growup_oil_giant_fields_count_l + 1),
-         log_growup_exclpop_l = log(growup_exclpop_l + 0.1),
-         log_growup_lexclpop_l = log(growup_lexclpop_l + 0.1),
-         log_growup_egippop_l = log(growup_egippop_l + 0.1),
-         log_growup_legippop_l = log(growup_legippop_l + 0.1),
-         log_growup_discrimpop_l = log(growup_discrimpop_l + 0.1),
-         log_growup_ldiscrimpop_l = log(growup_ldiscrimpop_l + 0.1)
-  ) %>% 
+  # mutate(log_growup_excl_groups_count_l = log(growup_excl_groups_count_l+1),
+  #        log_growup_egip_groups_count_l = log(growup_egip_groups_count_l + 1),
+  #        log_growup_oil_giant_fields_count_l = log(growup_oil_giant_fields_count_l + 1),
+  #        log_growup_exclpop_l = log(growup_exclpop_l + 0.1),
+  #        log_growup_lexclpop_l = log(growup_lexclpop_l + 0.1),
+  #        log_growup_egippop_l = log(growup_egippop_l + 0.1),
+  #        log_growup_legippop_l = log(growup_legippop_l + 0.1),
+  #        log_growup_discrimpop_l = log(growup_discrimpop_l + 0.1),
+  #        log_growup_ldiscrimpop_l = log(growup_ldiscrimpop_l + 0.1)
+  mutate(log_epr_excl_groups_count_l = log(epr_excl_groups_count_l+1),
+         log_epr_egip_groups_count_l = log(epr_egip_groups_count_l + 1),
+         log_epr_exclpop_l = log(epr_exclpop_l + 0.1),
+         log_epr_lexclpop_l = log(epr_lexclpop_l + 0.1),
+         log_epr_egippop_l = log(epr_egippop_l + 0.1),
+         log_epr_legippop_l = log(epr_legippop_l + 0.1),
+         log_epr_discrimpop_l = log(epr_discrimpop_l + 0.1),
+         log_epr_ldiscrimpop_l = log(epr_ldiscrimpop_l + 0.1),
+         log_epr_alonerule_groups_count_l = log(epr_alonerule_groups_count_l + 0.1),
+         log_epr_powershare_groups_count_l = log(epr_powershare_groups_count_l + 0.1)) %>% 
   mutate(elite_structure_l = dplyr::lag(elite_structure, n = 1),
-         single_group_elite_l = dplyr::lag(single_group_elite, n = 1))
+         single_group_elite_l = dplyr::lag(single_group_elite, n = 1)) %>% 
+  ungroup() %>% 
+  mutate(
+    onset_type = factor(onset_type,   
+                        levels = c("No onset", "Nonviolent", "Violent"))
+  ) %>% 
+  dplyr::select(cow, year, starts_with('v2'), starts_with('epr_'), starts_with('log_'), ends_with('_l'), starts_with('NVC'),
+                contains(c('gdp', 'youth', 'pop', 'growth')),
+         onset_type, any_campaign, last_campaign_year, peace_years,
+         elite_structure, single_group_elite, region, period) %>% 
+  dplyr::select(!contains('oilrent'))
+
+df_final_regr <- df_final %>% 
+  dplyr::select(cow, year, NVC2.1_NONVIOL, NVC2.1_VIOL, onset_type, NVC2.1_territorial, 
+                log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, epr_alonerule_groups_count_l,
+                log_gdp_pcap_l, gdp_growth_l,
+                pop_log_l, youthbulge_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, peace_years_l, 
+                region, period)
 
 write.csv(df_final, 'datasources/df_essay.csv')
+saveRDS(df_final, 'datasources/df_essay.rds')
+write.csv(df_final_regr, 'datasources/df_essay_regr.csv')
+saveRDS(df_final_regr, 'datasources/df_essay_regr.rds')

@@ -17,7 +17,7 @@ sim_function <- function(seed = 666,
                          scenario,        # [N x P] — all observations for OVA
                          K_minus_1,       # number of non-reference categories
                          predicted_values = FALSE,
-                         stochastic_component = NULL) {
+                         stoch_comp = NULL) {
   
   if (is.null(dim(scenario))) stop("scenario must be a matrix")
   if (length(coefs) != K_minus_1 * ncol(scenario)) stop("coefs and scenario don't fit")
@@ -35,11 +35,18 @@ sim_function <- function(seed = 666,
     coef_mat <- matrix(s, nrow = K_minus_1, ncol = P, byrow = TRUE)  # [K-1 x P]
     mu       <- coef_mat %*% t(scenario)                              # [K-1 x N]
     mu_full  <- rbind(0, mu)                                          # [K x N]
+    
+    # ← добавь это
+    #cat("dim mu_full:", dim(mu_full), "\n")
+    #cat("any NaN:", any(is.nan(mu_full)), "\n")
+    #cat("any Inf:", any(is.infinite(mu_full)), "\n")
+    
     probs    <- exp(mu_full) / matrix(
       colSums(exp(mu_full)), nrow = K, ncol = N, byrow = TRUE
     )                                                     # [K x N]
     rowMeans(probs)                                                   # [K] — OVA average
   }))
+  #cat("dim ev:", dim(ev), "\n")  # ← и это
   # ev: [nsim x K]
   
   if (predicted_values) {

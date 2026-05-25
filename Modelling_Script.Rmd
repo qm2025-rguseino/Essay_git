@@ -42,6 +42,59 @@ df_final <- df %>%
 source('simulation_functions.R')
 ```
 
+
+```{r}
+#H1: more EGIP, the more likely a nonviolent campaign
+model_h1_count <- multinom( #test the hypothesis of the discriminated groups share effect
+  onset_type ~ log_growup_egip_groups_count_l + log_growup_excl_groups_count_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
+model_h1_share <- multinom( #test the hypothesis of the discriminated groups share effect
+  onset_type ~ growup_legippop_l + growup_lexclpop_l +
+    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + swid_gini_disp_l + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+```
+
+```{r}
+vcov_h1_count <- vcov(model_h1_count)
+vcov_h1_share <- vcov(model_h1_share)
+```
+
+```{r}
+results_h1_count <- simulate_predictions(model = model_h1_count, data = df_final, focal_var = 'log_growup_egip_groups_count_l', outcome_var = 'onset_type', vcov_mat = vcov_h1_count, probs_seq = c(0.1, 1))  # ← skip the sparse tails entirely)
+results_h1_share <- simulate_predictions(model = model_h1_share, data = df_final, focal_var = 'growup_legippop_l', outcome_var = 'onset_type', vcov_mat = vcov_h1_share, probs_seq = c(0.10, 0.90))
+```
+
+```{r}
+x_min <- exp(quantile(df_final$log_growup_excl_groups_count_l, 0.01, na.rm = TRUE))
+x_max <- exp(quantile(df_final$log_growup_excl_groups_count_l, 0.99, na.rm = TRUE))
+
+ggplot(results_h1_count %>% dplyr::filter(category %in% c('Nonviolent', 'Violent'), 
+                                          x_val <= log(14 + 1)), 
+       aes(x = exp(x_val), y = ev_mean)) +
+  geom_line() +
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  scale_x_continuous(breaks = 0:14) + 
+  labs(x = "Discriminated population count", y = "Avg. predicted probability") +
+  theme_bw()
+
+ggplot(results_h1_share %>% dplyr::filter(category %in% c('Nonviolent', 'Violent')), aes(x = x_val, y = ev_mean)) +
+  geom_line() +
+  #geom_point() + 
+  geom_ribbon(aes(ymin = ev_lo, ymax = ev_hi), alpha = 0.1) +
+  facet_wrap(~category) +
+  labs(x = "Discriminated population share", y = "Avg. predicted probability") +
+  theme_bw()
+```
+
 ```{r}
 # estimate a two-way FE model (country-year) with lagged independent variables
 # to reduce reversed causality problems
