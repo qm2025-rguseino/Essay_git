@@ -5,7 +5,7 @@ date: "2026-05-23"
 ---
 
 ```{r setup, include=FALSE}
-p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra')
+p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra', 'clusterSEs')
 packages <- rownames(installed.packages())
 p_to_install <- p_needed[!(p_needed %in% packages)]
 if (length(p_to_install) > 0) {
@@ -33,49 +33,49 @@ source('simulation_functions.R')
 # 
 model_h1_count_log <- multinom(
   onset_type ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l +
-    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
-    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
   data = df_final, maxit = 1000 #the default number of iterations is not enough 
 )
 
 model_h1_share <- multinom(
   onset_type ~ epr_egippop_l + epr_exclpop_l +
-    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
-    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
   data = df_final, maxit = 1000 #the default number of iterations is not enough 
 )
 
 model_h1_lshare <- multinom(
   onset_type ~ epr_legippop_l + epr_lexclpop_l +
-    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
-    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
   data = df_final, maxit = 1000 #the default number of iterations is not enough 
 )
 
 model_h1_lshare <- multinom(
   onset_type ~ epr_legippop_l + epr_lexclpop_l +
-    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
-    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
   data = df_final, maxit = 1000 #the default number of iterations is not enough 
 )
 
 model_h1_alonerule_count <- multinom(
   onset_type ~ epr_alonerule_groups_count_l + epr_excl_groups_count_l +
-    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
-    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
   data = df_final, maxit = 1000 #the default number of iterations is not enough 
 )
 
 model_h1_alonerule_pop <- multinom(
   onset_type ~ epr_alonerulepop_l + epr_exclpop_l +
-    log_oilrents_l + log_gdp_pcap_l + pop_log_l + gdp_growth_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
-    log_v2regdur_l + swid_gini_disp_l + log_peace_years_l + as.factor(cow) + as.factor(year),
+    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
   data = df_final, maxit = 1000 #the default number of iterations is not enough 
 )
 ```
@@ -224,15 +224,23 @@ ggplot(results_model_h1_lshare %>% dplyr::filter(category %in% c('Nonviolent', '
 ```{r}
 #simulate two predicted probabilities - EGIP and MEG
 #on one graph
+model_h1_count_log <- multinom(
+  onset_type ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l +
+    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
+    v2x_execorr_l + v2x_polyarchy_l + I(v2x_polyarchy_l^2) +
+    log_v2regdur_l + peace_years_l + I(peace_years_l^2) + I(peace_years_l^3) + as.factor(cow) + as.factor(year),
+  data = df_final, maxit = 1000 #the default number of iterations is not enough 
+)
+
 results_model_h1_count_log_egip <- simulate_predictions(model = model_h1_count_log, 
-                                               data = model.frame(model_h1_count_log), 
-                                               focal_var = 'log_growup_egip_groups_count_l',
+                                               data = df_final, 
+                                               focal_var = 'log_epr_egip_groups_count_l',
                                                outcome_var = 'onset_type', 
                                                vcov_mat = vcov(model_h1_count_log), 
                                                probs_seq = c(0.1, 1))
 results_model_h1_count_log_excl <- simulate_predictions(model = model_h1_count_log, 
-                                               data = model.frame(model_h1_count_log), 
-                                               focal_var = 'log_growup_excl_groups_count_l',
+                                               data = df_final, 
+                                               focal_var = 'log_epr_excl_groups_count_l',
                                                outcome_var = 'onset_type', 
                                                vcov_mat = vcov(model_h1_count_log), 
                                                probs_seq = c(0.1, 1))

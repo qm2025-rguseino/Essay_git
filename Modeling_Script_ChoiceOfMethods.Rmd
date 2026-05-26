@@ -41,16 +41,16 @@ df_final_methods <- df_final_regr %>%
 # MODEL 2: MODEL WITH ELITE GROUPS THAT SHARE POWER
 # H3: SINGLE-GROUP ELITES -> MORE LIKELY TO BE VIOLENT. +AFRICAN SUB-SAMPLE
 # SAME CONTROL VARIABLES
-model1 <- glm(NVC2.1_NONVIOL ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l + 
+model1 <- glm(NVC2.1_VIOL ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l + log_epr_egippop_l + 
    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l +
-    log_v2regdur_l + peace_years_l + I(peace_years_l^2) + I(peace_years_l^3),
+    log_v2regdur_l + peace_years_l + as.factor(cow),
     family = binomial(link = "logit"),
     data = df_final_methods)
-model1_africa <- glm(NVC2.1_NONVIOL ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l + 
+model1_africa <- glm(NVC2.1_VIOL ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l + log_epr_egippop_l + 
     log_gdp_pcap_l + pop_log_l + youthbulge_l  + gdp_growth_l +
     v2x_execorr_l + v2x_polyarchy_l +
-    log_v2regdur_l +  peace_years_l + I(peace_years_l^2) + I(peace_years_l^3),
+    log_v2regdur_l +  peace_years_l + as.factor(cow),
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')))
 model2 <- glm(NVC2.1_NONVIOL ~ log_epr_powershare_groups_count_l + log_epr_excl_groups_count_l + 
@@ -95,11 +95,14 @@ ova_egip_full_m1   <- sim_ova_range(model1,
                                  focal_var = "log_epr_egip_groups_count_l", 
                                  nsim = 10000,
                                  #vcov_matrix = vcovHC(model1, type = "HC3")
-                                 vcov_matrix = vcovCL(model1, cluster = ~cow))$result %>% mutate(type = "Full Sample",       variable = "Ethnic Groups in Power")
+                                 #vcov_matrix = vcovCL(model1, cluster = ~cow))
+                                 vcov_matrix = vcov(model1))$result %>% mutate(type = "Full Sample",       variable = "Ethnic Groups in Power")
+
 ova_egip_africa_m1 <- sim_ova_range(model1_africa, focal_var = "log_epr_egip_groups_count_l",  
                                  nsim = 10000,
                                  #vcov_matrix = vcovHC(model1_africa, type = "HC3")
-                                 vcov_matrix = vcovCL(model1_africa, cluster = ~cow))$result %>% mutate(type = "MENA & Sub-Saharan Africa Sub-Sample", variable = "Ethnic Groups in Power")
+                                 #vcovCL(model1_africa, cluster = ~cow)
+                                 vcov_matrix = vcov(model1_africa))$result %>% mutate(type = "MENA & Sub-Saharan Africa Sub-Sample", variable = "Ethnic Groups in Power")
 
 # Excluded groups
 ova_excl_full_m1   <- sim_ova_range(model1,        focal_var = "log_epr_excl_groups_count_l", 
@@ -111,7 +114,7 @@ ova_excl_africa_m1 <- sim_ova_range(model1_africa, focal_var = "log_epr_excl_gro
                                  #vcov_matrix = vcovHC(model1_africa, type = "HC3")
                                  vcov_matrix = vcovCL(model1_africa, cluster = ~cow))$result %>% mutate(type = "MENA & Sub-Saharan Africa Sub-Sample", variable = "Excluded Ethnic Groups")
 
-ova_model1 <- rbind(ova_egip_full_m1, ova_egip_africa_m1, ova_excl_full_m1, ova_excl_africa_m1)
+ova_model1 <- rbind(ova_egip_full_m1, ova_egip_africa_m1)
 ova_model1 <- ova_model1 %>%
   mutate(type = factor(type, levels = c("Full Sample", "MENA & Sub-Saharan Africa Sub-Sample")))
 
@@ -119,9 +122,9 @@ ggplot(ova_model1, aes(x = exp(focal_value), y = mean, color = variable, fill = 
   geom_line(linewidth = 0.9) +
   geom_hline(yintercept = 0.5, linetype = 'dashed', color = 'grey', alpha = 0.8) + 
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.15, color = NA) +
-  scale_x_continuous(limits = c(NA, 14), breaks = 0:14) +
+  scale_x_continuous(limits = c(NA, 7), breaks = 0:7) +
   labs(x = "Ethnic groups count", y = "Campaign Predicted Probability \n (Nonviolent vs. Violent)", color = NULL, fill = NULL, 
-        title = 'Simulated predicted probabilities of a nonviolent campaign', 
+        title = 'Simulated predicted probabilities of a violent tactic choice', 
        caption = '10 000 simulations, 95% CI. Shaded area: sparse data (< 10 obs).') +
   facet_wrap(~type) +
   theme_bw() +
@@ -131,13 +134,14 @@ ggplot(ova_model1, aes(x = exp(focal_value), y = mean, color = variable, fill = 
     axis.title.y       = element_text(margin = margin(r = 10)),
     panel.grid.minor   = element_blank(),
     plot.caption     = element_text(hjust = 1, color = "grey50")
-  ) +
-  annotate("rect", xmin = 8, xmax = 14,
-           ymin = -Inf, ymax = Inf,
-           alpha = 0.04, fill = "black") +
-  annotate("text", x = 12, y = 0.05,
-           label = "Sparse data", size = 2.8,
-           color = "grey50")
+  )
+  #annotate("rect", xmin = 8, xmax = 14,
+  #         ymin = -Inf, ymax = Inf,
+  #         alpha = 0.04, fill = "black") +
+  #annotate("text", x = 12, y = 0.05,
+  #         label = "Sparse data", size = 2.8,
+  #         color = "grey50")
+ggsave("H1.png", width = 8, height = 5, dpi = 1000)
 ```
 
 ```{r}
@@ -177,7 +181,7 @@ ggplot(ova_model2, aes(x = exp(focal_value), y = mean, color = variable, fill = 
   geom_line(linewidth = 0.9) +
   geom_hline(yintercept = 0.5, linetype = 'dashed', color = 'grey', alpha = 0.8) + 
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.1, color = NA) +
-  scale_x_continuous(limits = c(NA, 14), breaks = 0:14) +
+  scale_x_continuous(limits = c(NA, 7), breaks = 0:7) +
   labs(x = "Ethnic groups count", y = "Campaign Predicted Probability \n (Violent vs. Nonviolent)", color = NULL, fill = NULL) +
   facet_wrap(~type) +
   theme_bw() +
