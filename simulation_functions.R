@@ -145,3 +145,17 @@ simulate_predictions <- function(
   
   results
 }
+
+boot_cluster_multinom <- function(model, data, cluster_var, R = 500, seed = 123) {
+  set.seed(seed)
+  clusters <- unique(data[[cluster_var]])
+  coef_boot <- replicate(R, {
+    # Resample whole clusters
+    sampled <- sample(clusters, length(clusters), replace = TRUE)
+    boot_data <- map_dfr(sampled, ~ data[data[[cluster_var]] == .x, ])
+    m <- update(model, data = boot_data)
+    coef(m)
+  })
+  # Variance from bootstrap distribution
+  tcrossprod(apply(coef_boot, 1, function(x) x - rowMeans(coef_boot))) / R
+}

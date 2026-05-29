@@ -5,7 +5,7 @@ date: "2026-05-23"
 ---
 
 ```{r setup, include=FALSE}
-p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra', 'stargazer', 'sandwich', 'sampleSelection')
+p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra', 'stargazer', 'sandwich', 'sampleSelection', 'caret')
 packages <- rownames(installed.packages())
 p_to_install <- p_needed[!(p_needed %in% packages)]
 if (length(p_to_install) > 0) {
@@ -93,13 +93,13 @@ stargazer(model1, model2, model3,
 # HIGHER EXCLUDED GROUPS COUNT MAKES NONVIOLENT CHOICE LESS LIKELY
 ova_egip_full_m1   <- sim_ova_range(model1,        
                                  focal_var = "log_epr_egip_groups_count_l", 
-                                 nsim = 10000,
+                                 nsim = 1000,
                                  #vcov_matrix = vcovHC(model1, type = "HC3")
                                  #vcov_matrix = vcovCL(model1, cluster = ~cow))
                                  vcov_matrix = vcov(model1))$result %>% mutate(type = "Full Sample",       variable = "Ethnic Groups in Power")
 
 ova_egip_africa_m1 <- sim_ova_range(model1_africa, focal_var = "log_epr_egip_groups_count_l",  
-                                 nsim = 10000,
+                                 nsim = 1000,
                                  #vcov_matrix = vcovHC(model1_africa, type = "HC3")
                                  #vcovCL(model1_africa, cluster = ~cow)
                                  vcov_matrix = vcov(model1_africa))$result %>% mutate(type = "MENA & Sub-Saharan Africa Sub-Sample", variable = "Ethnic Groups in Power")

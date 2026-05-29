@@ -49,7 +49,7 @@ EPR <- read.csv('datasources/EPR_panel.csv') %>%
   dplyr::select(!c(statename))  
 
 states <- build_states_panel(
-  start_year = 1946,
+  start_year = 1944,
   end_year = 2019,
   exclude_microstates = TRUE, #exclude microstates from the panel 
   exclude_non_un = TRUE, #excluded non-UN states from the panel
@@ -87,7 +87,7 @@ youth <- popAge1dt %>%
   youthbulge = total_15_29 / total_15_plus * 100
   ) %>%
   drop_na(cow) %>%
-  filter(year %in% c(1945:2024)) %>% 
+  filter(year %in% c(1944:2024)) %>% 
   dplyr::select(cow, year, median_age, youthbulge)
 
 # load executive corruption data
@@ -205,15 +205,16 @@ df_final <- df_comb %>%
     onset_type = factor(onset_type,   
                         levels = c("No onset", "Nonviolent", "Violent"))
   ) %>% 
-  dplyr::select(cow, year, starts_with('v2'), starts_with('epr_'), starts_with('log_'), ends_with('_l'), starts_with('NVC'),
+  dplyr::rename(country = country.x) %>% 
+  dplyr::select(cow, country, year, starts_with('v2'), starts_with('epr_'), starts_with('log_'), ends_with('_l'), starts_with('NVC'),
                 contains(c('gdp', 'youth', 'pop', 'growth')),
          onset_type, any_campaign, last_campaign_year, peace_years,
          elite_structure, single_group_elite, region, period) %>% 
   dplyr::select(!contains('oilrent'))
 
 df_final_regr <- df_final %>% 
-  dplyr::select(cow, year, NVC2.1_NONVIOL, NVC2.1_VIOL, onset_type, NVC2.1_territorial, 
-                log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, epr_alonerule_groups_count_l,
+  dplyr::select(cow, country, year, NVC2.1_NONVIOL, NVC2.1_VIOL, onset_type, NVC2.1_territorial, 
+                log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, log_epr_egippop_l, epr_alonerule_groups_count_l,
                 log_gdp_pcap_l, gdp_growth_l,
                 pop_log_l, youthbulge_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, peace_years_l, 
                 region, period)
