@@ -1,3 +1,5 @@
+rm(list = ls())
+
 #### STEP 0 : load packages ####
 
 # install.packages("remotes") 
@@ -219,6 +221,83 @@ df_final_regr <- df_final %>%
                 pop_log_l, youthbulge_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, peace_years_l, 
                 region, period)
 
+### Add Power Equality Index ###------------------------------------------------
+## Load group level data
+group_level <- read_csv("datasources/data_group_level.csv")
+
+## Create included/excluded fractionalization index
+# (based on Hendrix, Cullen S., und Idean Salehyan. „Ethnicity, Nonviolent Protest, and Lethal Repression in Africa“. Journal of Peace Research 56, Nr. 4 (2019): 469–84. https://doi.org/10.1177/0022343318820088.)
+group_level_FI <- group_level %>%
+  filter(isrelevant == 1) %>%
+  group_by(countryname, year) %>%
+  mutate(
+    included_total = sum(groupsize[status_egip == 1]),
+    excluded_total = sum(groupsize[status_egip == 0])
+  ) %>%
+  summarise(
+    IFI_I = sum(
+      (groupsize[status_egip == 1] /
+         included_total[1])^2
+    ),
+    
+    EFI_E = sum(
+      (groupsize[status_egip == 0] /
+         excluded_total[1])^2
+    )
+  )
+
+## Create Power Equality Index
+group_level_ENEG <- group_level %>%
+  filter(status_egip == 1) %>%
+  mutate(
+    power_score = case_when(
+      status_pwrrank == 4 ~ 1,
+      status_pwrrank == 5 ~ 2,
+      status_pwrrank == 6 ~ 3,
+      status_pwrrank == 7 ~ 4
+    )
+  ) %>%
+  group_by(countryname, year) %>%
+  mutate(
+    power_share = power_score / sum(power_score)
+  ) %>%
+  summarise(
+    ENEG = 1 / sum(power_share^2),
+    .groups = "drop"
+  )
+
+## Create alternative measure for power equality
+group_level_hr <- group_level %>%
+  filter(status_egip == 1) %>%
+  group_by(countryname, year) %>%
+  summarise(
+    highest_rank = max(status_pwrrank, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+## Create monopoly dummy
+group_level_monopoly <- group_level %>%
+  filter(status_egip == 1) %>%
+  group_by(countryname, year) %>%
+  summarise(
+    monopoly_dummy = ifelse(any(status_pwrrank == 7, na.rm = TRUE), 1, 0),
+    .groups = "drop"
+  )
+  
+
+
+## Merge with data
+group_level_indices <- list(
+  group_level_FI,
+  group_level_ENEG,
+  group_level_hr,
+  group_level_monopoly
+) %>%
+  reduce(full_join,
+         by = c("countryname", "year"))
+df_final_regr <- merge(df_final_regr, group_level_indices, by.x = c("country", "year"), by.y= c("countryname", "year"), all.x = TRUE)
+
+## Save datasets
 write.csv(df_final, 'datasources/df_essay.csv')
 saveRDS(df_final, 'datasources/df_essay.rds')
 write.csv(df_final_regr, 'datasources/df_essay_regr.csv')
