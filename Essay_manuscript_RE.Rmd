@@ -26,12 +26,21 @@ abstract: |
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
   echo    = FALSE,    # hide code from output
-  warning = FALSE,    # suppress warnings
+  warning = TRUE,    # suppress warnings
   message = FALSE,     # suppress package loading messages
   include = FALSE # hide code
 )
 
-p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra', 'stargazer', 'sandwich', 'sampleSelection', 'grateful', 'modelsummary', 'bookdown', 'patchwork', 'MASS', 'lme4')
+p_needed <- c(
+  "tidyverse",        # dplyr, ggplot2, tidyr throughout
+  "lme4",             # glmer for RE logit
+  "MASS",             # mvrnorm in OVA simulation functions
+  "kableExtra",       # kbl, kable_styling for all tables
+  "patchwork",        # combining histogram + density plot
+  "bookdown",         # pdf_document2, cross-referencing
+  "countrycode",      # datacollection.R country coding
+  "pROC"            # AUC-ROC model fit
+)
 packages <- rownames(installed.packages())
 p_to_install <- p_needed[!(p_needed %in% packages)]
 if (length(p_to_install) > 0) {
@@ -43,26 +52,27 @@ options(warn = -1)
 download.file(
   "https://www.zotero.org/styles/apa",
   destfile = "apa.csl"
-)
+) #download APA citation style
 
 stargazer_opt <- ifelse(knitr::is_latex_output(), "latex", "html")
 ```
 
 ```{r functions}
-source('simulation_functions.R')
-source('ova_sim_functions.R')
+source('simulation_functions.R') #use pre-defined simulation functions
+source('ova_sim_functions.R') #use observed value approach (OVA) simulation functions
 ```
 
 ```{r load-data}
-df_final_regr <- readRDS('datasources/df_essay_regr.rds') #Ruslan's dataset
+df_final_regr <- readRDS('datasources/df_essay_regr.rds') # read a dataset
 # RESTRICT THE DATASET TO ONLY ONSETS
 # TEST THE HYPOTHESES ABOUT THE CHOICE OF METHODS
 df_final_methods <- df_final_regr %>% 
   filter(onset_type %in% c('Nonviolent', 'Violent'))
 
+# Add variables for a Within-Between Random Effect modelling
 df_final_methods <- df_final_methods %>%
   group_by(cow) %>%
-  mutate( #in case of a Within-Between Random Effect model
+  mutate(
     mean_IFI     = mean(epr_IFI_l, na.rm = TRUE), 
     mean_EFI     = mean(epr_EFI_l, na.rm = TRUE),
     demeaned_IFI = epr_IFI_l - mean_IFI,
@@ -83,15 +93,15 @@ df_final_methods <- df_final_methods %>%
 
 \section{Data and Methods}
 \subsection{Data Description}
-Our study employs a panel dataset of `r nrow(df_final_methods)` so-called "maximalist campaigns", a concept firstly introduced by Chenoweth and Stephan in *Why Civil Resistance Works* book [@chenoweth2011civil]. Following their definition, a campaign is "a series of observable, continuous, purposive mass tactics or events in pursuit of a political objective’, with maximalist objectives encompassing regime change, self-determination, secession, and the expulsion of foreign occupations [@DVN/MHOXDV_2019]. We rely on Nonviolent and Violent Campaigns and Outcomes (NAVCO) 2.1 dataset, which records 384 maximalist campaigns from 1945 to 2013, extended by John Chin in his dissertation to `r nrow(df_final_methods)` campaigns - the version we use [@chin2017military].
+Our study employs a panel dataset of `r nrow(df_final_methods)` so-called "maximalist campaigns", a concept first introduced by Chenoweth and Stephan in *Why Civil Resistance Works* book [@chenoweth2011civil]. Following their definition, a campaign is "a series of observable, continuous, purposive mass tactics or events in pursuit of a political objective’, with maximalist objectives encompassing regime change, self-determination, secession, and the expulsion of foreign occupations [@DVN/MHOXDV_2019]. We rely on Nonviolent and Violent Campaigns and Outcomes (NAVCO) 2.1 dataset, which records 384 maximalist campaigns from 1945 to 2013, extended by John Chin in his dissertation to `r nrow(df_final_methods)` campaigns - the version we use [@chin2017military].
 
-The central conceptual distinction is between violent and nonviolent repertoires of contention. Following NAVCO coding rules, nonviolent tactics ‘do not directly threaten or harm the physical wellbeing of the regime, its agents, or its citizens’ and the violent repertoire ‘involves the use of force to physically harm or threaten to harm the opponents’ [@DVN/MHOXDV_2019]. The categories are mutually exclusive. A prominent example of a nonviolent campaign is the German 1989 *Die Wende* and the Cuban Revolution exemplifies a violent campaign. The violence/nonviolence distinction is well-established in the peace science literature and some significant findings have been made using NAVCO dataset [@celestino2013fresh; @manekin2022effective; @cunningham2013understanding], some papers also rely on John Chin's NAVCO 2.1 extension, which we use [@chin2023personalization]. Violence is operationally coded as a binary variable (1 = a campaign take a violent form, 0 = a campaign takes a nonviolent form).
+The central conceptual distinction is between violent and nonviolent repertoires of contention. Following NAVCO coding rules, nonviolent tactics ‘do not directly threaten or harm the physical wellbeing of the regime, its agents, or its citizens’ and the violent repertoire ‘involves the use of force to physically harm or threaten to harm the opponents’ [@DVN/MHOXDV_2019]. The categories are mutually exclusive. A prominent example of a nonviolent campaign is the German 1989 *Die Wende* and the Cuban Revolution exemplifies a violent campaign. The violence/nonviolence distinction is well-established in the peace science literature and some significant findings have been made using NAVCO dataset [@celestino2013fresh; @manekin2022effective; @cunningham2013understanding], some papers also rely on John Chin's NAVCO 2.1 extension, which we use [@chin2023personalization]. Violence is operationally coded as a binary variable (1 = a campaign takes a violent form, 0 = a campaign takes a nonviolent form).
 
-Our key independent variables are drawn from the Ethnic Power Relations (EPR) Core Dataset [@vogt2015integrating]. EPR provides information on ethnic groups and their relative access to power. Following Hendrix and Salehyan [-@hendrix2019ethnicity], we operationalize the ethnic ruling elite fragmentation via the *Included fractionalization index (IFI)* and the *Excluded fractionalization index (EFI)*. IFI is "a Herfindahl-like index of all groups counted as ‘included’ (i.e. having access to executive power) during a given country-year", whilst EFI "a Herfindahl-like index of all groups counted as ‘excluded’ during a given country-year". Thus, a higher IFI indicates a more concentrated ethnic ruling elite and a lower IFI shows that ethnic power is distributed more equally, across many groups. Instead of relying on raw counts, IFI and EFI are more theoretically nourished. If a raw count treats two countries with the ethnic groups in power count of 3 equally, IFI and EFI account for ethnic power distributions.
+Our key independent variables are drawn from the Ethnic Power Relations (EPR) Core Dataset [@vogt2015integrating]. EPR provides information on ethnic groups and their relative access to power. Following Hendrix and Salehyan [-@hendrix2019ethnicity], we operationalize the ethnic ruling elite fragmentation via the *Included fractionalization index (IFI)* and the *Excluded fractionalization index (EFI)*. IFI is "a Herfindahl-like index of all groups counted as ‘included’ (i.e. having access to executive power) during a given country-year", whilst EFI is "a Herfindahl-like index of all groups counted as ‘excluded’ during a given country-year". Thus, a higher IFI indicates a more concentrated ethnic ruling elite and a lower IFI shows that ethnic power is distributed more equally, across many groups. Instead of relying on raw counts, IFI and EFI are more theoretically motivated. If a raw count treats two countries with the ethnic groups in power count of 3 equally, IFI and EFI account for ethnic power distributions.
 
 <!-- Inspired by Bivens and Thurber [-@Bivens26], we focus on the Ethnic Groups in Power (EGIP) and Marginalized Ethnic Groups (MEG^[We also refer to MEG as "excluded groups", these concepts are used synonymously]) counts. EGIP encompasses groups that exercise political power either via maintaining ethnic dominance or through power-sharing arrangements with junior partners, whilst MEG covers groups that are politically excluded from decision making, including both powerless and purposely discriminated groups. Due to theoretical expectations that a marginal effect of the ethnic groups count on the tactic choice diminishes at higher values, we apply the natural logarithm transformations to both EGIP and MEG counts in the empirical analysis. -->
 
-To address endogeneity and block non-causal paths, we control for a standard set of confounders: GDP per capita in constant PPP dollars [@gapminderGDPCapitaConstant2024]; GDP annual growth rates; logged population size [@unitednationsWorldPopulationProspects2024]; youth bulge - the proportion of young population (15-29) to the total population size; executive corruption scores [@coppedgeVDemCodebookV142024]; polyarchy (electoral democracy) scores [@coppedgeVDemCodebookV142024]; regime duration in years [@coppedgeVDemCodebookV142024]; peace years (years elapsed since the last maximalist campaign in each country); EFI to account for a possible confounding of excluded ethnic groups as well. To address reversed causality, all the independent variables are one-year lagged^[Even though we find it unconvincing that a choice of one tactic over the other could anyhow affect IFI and EFI].
+To address endogeneity and block non-causal paths, we control for a standard set of confounders: GDP per capita in constant PPP dollars [@gapminderGDPCapitaConstant2024]; GDP annual growth rates; logged population size [@unitednationsWorldPopulationProspects2024]; youth bulge - the proportion of young population (15-29) to the total population size; executive corruption scores [@coppedgeVDemCodebookV142024]; polyarchy (electoral democracy) scores [@coppedgeVDemCodebookV142024]; regime duration in years [@coppedgeVDemCodebookV142024]; peace years (years elapsed since the last maximalist campaign in each country); EFI to account for a possible confounding of excluded ethnic groups as well. To address reversed causality, all the independent variables are one-year lagged^[Even though we find it unconvincing that a choice of one tactic over the other could affect IFI and EFI].
 
 \subsection*{Descriptive statistics}
 ```{r descriptive-stats, echo=FALSE, include = TRUE}
@@ -114,19 +124,17 @@ datasummary(
 ) %>% kableExtra::kable_styling(latex_options = c("hold_position"))
 ```
 
-Table \@ref(tab:descriptive-stats) presents descriptive statistics for all variables included in the analysis. Data missingness is not a significant issue, though for all campaigns in Yemen there is missing data on ethnic groups. Figure \@ref(fig:epr-ifi) shows the distribution of the included fractionalization index with respect to the tactic choice, visualized by both a histogram and a density plot. At low IFI values, violent tactics are more preferred and with the growing IFI the nonviolent tactic is prevalent. However, with the growing IFI both tactic choices occur less frequently, reflecting the mass anti-regime mobilization logic - with the growing elite cohesion, political opportunities of rebellion are decreasing, regardless of the repertoire of contention. This visualization shows some degree of variation of 1) the Included fractionaliztion index 2) between violent and nonviolent choice.
+Table \@ref(tab:descriptive-stats) presents descriptive statistics for all variables included in the analysis. Data missingness is not a significant issue, though for all campaigns in Yemen there is missing data on ethnic groups. Figure \@ref(fig:epr-ifi) shows the distribution of the included fractionalization index with respect to the tactic choice, visualized by both a histogram and a density plot. At low IFI values, violent tactics are more frequent and with the growing IFI the nonviolent tactic is prevalent. However, with the growing IFI both tactic choices occur less frequently, reflecting the mass anti-regime mobilization logic - with the growing elite cohesion, political opportunities of rebellion are decreasing, regardless of the repertoire of contention. This visualization shows some degree of variation of 1) the Included fractionaliztion index 2) between violent and nonviolent choice.
 
 ```{r epr-ifi, fig.cap="Included fractionalization index by Repertoire Choice: a histogram and a density plot", fig.align = 'center', out.width="85%", include = TRUE}
 # Histogram
 p_hist <- df_final_methods %>%
-  filter(onset_type %in% c("Nonviolent", "Violent")) %>%
-  drop_na(epr_IFI_l) %>%
   ggplot(aes(x = epr_IFI_l, fill = onset_type)) +
   geom_histogram(binwidth = 0.1, position = "dodge",
                  color = "white", linewidth = 0.3) +
   scale_fill_manual(values = c("Nonviolent" = "#2C86C7",
                                "Violent"    = "#C0392B")) +
-  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1)) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
   labs(x = "IFI (0 = fully fragmented, 1 = fully concentrated)",
        y = "Count",
        fill = NULL) +
@@ -134,17 +142,15 @@ p_hist <- df_final_methods %>%
   theme(legend.position  = "none",
         panel.grid.minor = element_blank())
 
-# Density
+# Density plot
 p_dens <- df_final_methods %>%
-  filter(onset_type %in% c("Nonviolent", "Violent")) %>%
-  drop_na(epr_IFI_l) %>%
   ggplot(aes(x = epr_IFI_l, fill = onset_type, color = onset_type)) +
   geom_density(alpha = 0.25, linewidth = 0.8, bw = 0.06) +
   scale_fill_manual(values  = c("Nonviolent" = "#2C86C7",
                                 "Violent"    = "#C0392B"), guide   = "none") +
   scale_color_manual(values = c("Nonviolent" = "#2C86C7",
                                 "Violent"    = "#C0392B"), guide   = "none") +
-  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.1)) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
   labs(x     = "IFI (0 = fully fragmented, 1 = fully concentrated)",
        y     = "Density",
        fill  = NULL,
@@ -166,7 +172,9 @@ p_dens <- df_final_methods %>%
 
 \subsection*{Modeling approach}
 
-```{r}
+```{r within-sd-re}
+# calculate a standard deviation of IFI and EFI grouped by countries
+# to justify RE over FE
 within_sd <- df_final_methods %>%
   group_by(cow) %>%
   summarise(
@@ -179,7 +187,7 @@ within_sd <- df_final_methods %>%
 
 Given a binary dependent variable and a balanced sample -`r nrow(df_final_methods[df_final_methods$NVC2.1_VIOL == 1,])` of violent and `r nrow(df_final_methods[df_final_methods$NVC2.1_VIOL == 0,])` of nonviolent onsets - we estimate a logit model. As we do not predict the duration of events, there is no need for advanced binary choice models such as a complementary log-log. To account for a nested structure of our data, where campaigns are nested within countries, we add a country-level random varying intercept in all models. 
 
-Including a country fixed effect to control for the time-invariant unobserved factors such as culture or geography is theoretically appealing and common in the peace science literature [@butcher2016manufacturing; @ives2022greed; @fearon2003ethnicity; @jung2025motivating]. However, given that ethnic structures are almost constant *within* countries and vary predominantly *between* countries - the variation that a country fixed effect absorbs, adding it is methodologically incorrect. Exploratory data analysis showed that the median within-country standard deviation of both IFI and EFI rounds to zero (up to three decimal points), meaning that the FE identification would test on a very small sample of countries that experienced ethnic configuration changes between maximalist campaigns. Random effects exploit both within- and between-group variations, which is appropriate to our research question and data structure. Moreover, a random-effects estimator introduces "a compromise between the fixed-effects and pooled models", though we acknowledge that the coefficients can be partially biased in case varying intercepts correlate with the regressors [@clark2015should]. Despite this potential bias, there is no way we could arguably prefer FE over RE.
+Including a country fixed effect to control for the time-invariant unobserved factors such as culture or geography is theoretically appealing and common in the peace science literature [@butcher2016manufacturing; @ives2022greed; @fearon2003ethnicity; @jung2025motivating]. However, given that ethnic structures are almost constant *within* countries and vary predominantly *between* countries - the variation that a country fixed effect absorbs, adding it is methodologically inappropiate. Exploratory data analysis showed that the median within-country standard deviation of both IFI and EFI rounds to `r round(median(within_sd$sd_IFI, na.rm=TRUE), 2)` (up to two decimal points without rounding), meaning that the FE identification would test on a very small sample of countries that experienced ethnic configuration changes between maximalist campaigns. Random effects exploit both within- and between-group variations, which is appropriate for our research question and data structure. Moreover, a random-effects estimator introduces "a compromise between the fixed-effects and pooled models", though we acknowledge that the coefficients can be partially biased in case varying intercepts correlate with the regressors [@clark2015should]. Despite this potential bias, RE is still a more preferable choice over FE.
 
 For Hypothesis 1, our model specification is:
 $$
@@ -194,17 +202,18 @@ $$
 $$
 where $\mathbf{X}_{it-1}$ is the vector of covariates and $\alpha_{[j]i}$ is a country varying intercept.
 
-For uncertainty calculations, we follow a King's simulation approach [@king2000making]. This approach is also well-established in peace science literature [@butcher2016manufacturing]. Instead of reporting coefficients and their significance, we calculate predicted probabilities as the main quantity of interest via an observed value approach (OVA), meaning we simulate the predicted probabilities for all observations and then calculate the mean of them^[We report coefficients only in the cross-validation robustness check]. For the essay, we define `sim_ova_range` function for the OVA simulations, allowing to calculate predicted probabilities in just four lines of code. It also allows for different CI levels, seeds, number of values and focal variable ranges at the researcher's discretion.
+For uncertainty calculations, we follow a King's simulation approach [@king2000making]. This approach is also well-established in peace science literature [@butcher2016manufacturing]. Instead of reporting coefficients and their significance, we calculate predicted probabilities as the main quantity of interest via an observed value approach (OVA), meaning we simulate the predicted probabilities for all observations and then calculate the mean of them^[We report coefficients only in the cross-validation robustness check]. We simulate over the full available range of the vocal variable values. For the essay, we define `sim_ova_range` function for the OVA simulations, allowing to calculate predicted probabilities in just four lines of code. It also allows for different CI levels, seeds, number of values and focal variable ranges at the researcher's discretion.
 
 \subsection{Results}
 
 ```{r h1-modeling}
-# model1 <- glm(NVC2.1_VIOL ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l + log_epr_egippop_l + 
-#    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-#     v2x_execorr_l + v2x_polyarchy_l +
-#     log_v2regdur_l + peace_years_l + as.factor(cow),
-#     family = binomial(link = "logit"),
-#     data = df_final_methods)
+# estimate a null model
+null_model <- glmer(NVC2.1_VIOL ~ 
+                      1 + 
+                      (1 | cow), # random intercept by country
+                    data   = df_final_methods,
+                    family = binomial("logit"))
+
 model1 <- glmer(NVC2.1_VIOL ~ 
                     epr_IFI_l + epr_EFI_l + 
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
@@ -212,7 +221,9 @@ model1 <- glmer(NVC2.1_VIOL ~
                     log_v2regdur_l + peace_years_l + 
                     (1 | cow),        # random intercept by country
                   data = df_final_methods,
-                  family = binomial(link = "logit"))
+                  family = binomial(link = "logit"),
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5))) #apply an optimizer for convergence
 ```
 
 ```{r h1-qoisim}
@@ -226,7 +237,7 @@ ova_egip_full_m1  <- sim_ova_range(model1,
 ggplot(ova_egip_full_m1,
        aes(x = focal_value, y = mean)) +
   geom_line(linewidth = 0.9, color = "#C0392B") +
-  geom_hline(yintercept = round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2), 
+  geom_hline(yintercept = round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2), # a benchmark probability dashed line
              linetype = 'dashed', color = 'grey', alpha = 0.8) + 
   geom_ribbon(aes(ymin = lower, ymax = upper), 
               alpha = 0.15, fill = "#C0392B", color = NA) +
@@ -247,7 +258,7 @@ ggplot(ova_egip_full_m1,
     plot.caption     = element_text(hjust = 1, color = "grey50")
   )
 ```
-To test the first hypothesis, we estimate a logit model of the violent tactic choice, according to the H1 model specification. Figure \@ref(fig:h1-plot) shows the simulated predicted probabilities of a violent tactic choice over a range of observed IFI values. Despite a downward trend - from `r round(ova_egip_full_m1$mean[1], 2)` at IFI equal to `r round(ova_egip_full_m1$focal_value[1], 2)` to `r round(ova_egip_full_m1$mean[50], 2)`  at IFI equal to `r round(ova_egip_full_m1$focal_value[50], 2)` - confidence intervals that encompass 0.5 do not allow us to claim that with the increasing IFI the rebels would prefer violence over nonviolence. Instead of zero probability, our benchmark probability is approx. `r round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2)` - the sample proportion of violent campaigns in the whole sample.
+To test the first hypothesis, we estimate a logit model of the violent tactic choice, according to the H1 model specification. Figure \@ref(fig:h1-plot) shows the simulated predicted probabilities of a violent tactic choice over a full available range of observed IFI values. Despite a downward trend - from `r round(ova_egip_full_m1$mean[1], 2)` at IFI equal to `r round(ova_egip_full_m1$focal_value[1], 2)` to `r round(ova_egip_full_m1$mean[50], 2)`  at IFI equal to `r round(ova_egip_full_m1$focal_value[50], 2)` - confidence intervals that encompass 0.5 do not allow us to claim that with the increasing IFI the rebels would prefer violence over nonviolence. Instead of zero probability, our benchmark probability is approx. `r round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2)` - the sample proportion of violent campaigns in the whole sample.
 
 ```{r h1-train-test sampling, include = TRUE}
 set.seed(666)  # same seed as simulations for reproducibility
@@ -265,11 +276,13 @@ model1_train  <- glmer(NVC2.1_VIOL ~
                     log_v2regdur_l + peace_years_l + 
                     (1 | cow),        # random intercept by country
                   data = df_final_methods_train,
-                  family = binomial(link = "logit"))
+                  family = binomial(link = "logit"),
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5)))
 
-trained_cows <- rownames(ranef(model1_train)$cow)
+trained_cows <- rownames(ranef(model1_train)$cow) # what countries are estimated?
 df_final_methods_test <- df_final_methods[test_idx, ] %>%
-  filter(as.character(cow) %in% trained_cows) %>% #test is only with the trained country FEs
+  filter(as.character(cow) %in% trained_cows) %>%  #test is only with the trained countries
   drop_na(epr_IFI_l, epr_EFI_l, log_gdp_pcap_l, pop_log_l, youthbulge_l,
           gdp_growth_l, v2x_execorr_l, v2x_polyarchy_l,
           log_v2regdur_l, peace_years_l)
@@ -277,13 +290,14 @@ df_final_methods_test <- df_final_methods[test_idx, ] %>%
 pred_test_prob <- predict(model1_train, newdata = df_final_methods_test, type = "response")  #predict on the test dataset
 actual_test <- ifelse(df_final_methods_test$NVC2.1_VIOL == 1,
                       "Violent", "Nonviolent")
-pred_test   <- ifelse(pred_test_prob >= 0.5, "Violent", "Nonviolent")
+pred_test   <- ifelse(pred_test_prob >= 0.5, "Violent", "Nonviolent") # 0.5 as the prediction threshold
 
 tp <- sum(pred_test == "Violent"    & actual_test == "Violent")
 tn <- sum(pred_test == "Nonviolent" & actual_test == "Nonviolent")
 fp <- sum(pred_test == "Violent"    & actual_test == "Nonviolent")
 fn <- sum(pred_test == "Nonviolent" & actual_test == "Violent")
 
+# calculate metrics
 accuracy  <- (tp + tn) / (tp + tn + fp + fn)
 precision <- tp / (tp + fp)
 recall    <- tp / (tp + fn)   
@@ -328,7 +342,7 @@ bind_rows(conf_df, metrics_df) %>%
 Despite an insignificant effect of IFI on a violent choice, the model as a whole demonstrates a strong predictive performance. We divided the dataset into a train and test sample, estimated a logit model on the train sample and predicted a tactic choice on the test set. Table \@ref(tab:conf-matrix-h1) reports the confusion matrix and performance metrics. With an accuracy of `r round(accuracy, 2)` and F1 score of `r round(f1, 2)`, our model in general predicts tactic choice well above a coin toss, predicting violence a bit better than the nonviolent choice. An important implication here is that the model as a whole (including the specification itself, a set of covariates and a country varying intercept captures meaningful variation in the outcome, even though the IFI does not significantly predict a violent choice.
 
 \subsection{Robustness checks}
-We conduct four robustness checks. First, given that civil conflicts and a tactic choice are regionally clustered, we estimate an additional model on the Middle East and North Africa (MENA) and Sub-Saharan Africa countries subsample, where violent campaigns are more expected than in other regions. For the full sample, there are `r round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods) * 100, 1)`% of violent campaigns, whilst for MENA \& Sub-Saharan Africa there are `r round(sum(df_final_methods[df_final_methods$region %in% c('Middle East & North Africa', 'Sub-Saharan Africa'),]$NVC2.1_VIOL) / nrow(df_final_methods[df_final_methods$region %in% c('Middle East & North Africa', 'Sub-Saharan Africa'),]) * 100, 1)`% of them. Second, territorial campaigns could be more ethnicity-driven and secessionist civil wars along ethnic lines are widely researched in the academic literature [@collier2006political; @denny2014ethnicity; @toft2012self]. For this reason, we estimated three separate models 1) on the MENA & Sub-Saharan Africa subsample, 2) excluding territorial campaigns and 3) both on the MENA & Sub-Saharan Africa sub-sample with excluded territorial campaigns. Finally, following Bell and Jones [-@bell2015explaining], we estimate an alternative Within-Between Random Effect (REWB) model specification. REWB presents a main independent variable in two forms: its demeaned form and a group mean. De-meaning allows to estimate a *within* (essentially fixed) effect and save the underlying assumption of the varying intercept model.
+We conduct four robustness checks. First, given that civil conflicts and a tactic choice are regionally clustered, we estimate an additional model on the Middle East and North Africa (MENA) and Sub-Saharan Africa countries subsample, where violent campaigns are more expected than in other regions. For the full sample, there are `r round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods) * 100, 1)`% of violent campaigns, whilst for MENA \& Sub-Saharan Africa there are `r round(sum(df_final_methods[df_final_methods$region %in% c('Middle East & North Africa', 'Sub-Saharan Africa'),]$NVC2.1_VIOL) / nrow(df_final_methods[df_final_methods$region %in% c('Middle East & North Africa', 'Sub-Saharan Africa'),]) * 100, 1)`% of them. Second, territorial campaigns could be more ethnicity-driven and secessionist civil wars along ethnic lines are widely researched in the academic literature [@collier2006political; @denny2014ethnicity; @toft2012self]. For this reason, we estimated three separate models 1) on the MENA & Sub-Saharan Africa subsample, 2) excluding territorial campaigns and 3) both on the MENA & Sub-Saharan Africa sub-sample with excluded territorial campaigns. Finally, following Bell and Jones [-@bell2015explaining], we estimate an alternative Within-Between Random Effect (REWB) model specification. REWB presents a main independent variable in two forms: its demeaned form and a group mean. De-meaning allows to estimate a *within* (essentially fixed) effect and save the underlying assumption of the varying intercept model. An important note here is that we do not compare the model fit of these specifications because of the different samples, which make the models incomparable in terms of model fit measures.
 
 ```{r h1-robustness-modelling}
 model1_africa <- glmer(NVC2.1_VIOL ~ 
@@ -338,7 +352,9 @@ model1_africa <- glmer(NVC2.1_VIOL ~
                     log_v2regdur_l + peace_years_l + 
                     (1 | cow),
     family = binomial(link = "logit"),
-    data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')))
+    data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')),
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5))) # filter by the regionss
 
 model1_noterr <- glmer(NVC2.1_VIOL ~ 
                     epr_IFI_l + epr_EFI_l + 
@@ -347,7 +363,17 @@ model1_noterr <- glmer(NVC2.1_VIOL ~
                     log_v2regdur_l + peace_years_l + 
                     (1 | cow),
     family = binomial(link = "logit"),
-    data = df_final_methods %>% filter(NVC2.1_territorial == 0))
+    data = df_final_methods %>% filter(NVC2.1_territorial == 0),
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5))) #filter by the non-territorial campaigns
+# WARNING! The model did not initially converge
+all_fits <- allFit(model1_noterr) #try all optimizers with a warm start
+summary(all_fits)$llik  #bobyqa has the best llik
+sapply(all_fits, function(m) {
+  tryCatch(fixef(m)["epr_IFI_l"], error = function(e) NA)
+}) #the IFI coefficient is stable
+model1_noterr <- all_fits[["bobyqa"]] # extract best fit
+model1_noterr@optinfo$conv$lme4$messages #the model converged
 
 model1_africa_noterr <- glmer(NVC2.1_VIOL ~ 
                     epr_IFI_l + epr_EFI_l + 
@@ -356,7 +382,9 @@ model1_africa_noterr <- glmer(NVC2.1_VIOL ~
                     log_v2regdur_l + peace_years_l + 
                     (1 | cow),
     family = binomial(link = "logit"),
-    data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')) %>% filter(NVC2.1_territorial == 0))
+    data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')) %>% filter(NVC2.1_territorial == 0),
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5)))
 ```
 
 ```{r h1-robustness-qoisim}
@@ -391,7 +419,7 @@ ova_model1_robustness <- bind_rows(
 ggplot(ova_model1_robustness,
        aes(x = focal_value, y = mean)) +
   geom_line(linewidth = 0.9, color = "#C0392B") +
-  geom_hline(yintercept = round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2), 
+  geom_hline(yintercept = round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2),  # a benchmark probability dashed line
              linetype = 'dashed', color = 'grey', alpha = 0.8) + 
   geom_ribbon(aes(ymin = lower, ymax = upper), 
               alpha = 0.15, fill = "#C0392B", color = NA) +
@@ -414,7 +442,7 @@ ggplot(ova_model1_robustness,
   )
 ```
 
-We calculate simulated predicted probabilities over the range of IFI values for all three robustness check models and summarize the findings on one plot. Figure \@ref(fig:h1-robustness-plot) shows the results along three robustness specifications, including the full-sample baseline. The only partially significant finding is in the model which excludes territorial campaigns (this sub-sample mostly includes anti-regime campaigns). For the first half of IFI values (from 0 to approx. 0.5), campaigns that exclude territorial goals/claims have a higher chance of being nonviolent and the rebels push towards a higher likelihood of violence with the growing IFI value. This (though cautious) finding can be explained by the logic of mass anti-regime mobilization, where a more concentrated ethnic elite decreases the benefits of nonviolent resistance and pushes the rebels toward violent repertoires of contention. For the MENA \& Sub-Saharan Africa subsample (both with and without territorial campaigns) there is no systematic difference between violence and nonviolence across the growing IFI value. Figure \@ref(fig:h1-robustness-plot-appendix) plots simulated predicted probabilities for the baseline and the REWB model, demonstrating practically identical results (see Appendix \ref{appendix-a}). In general, our null result is robust.
+We calculate simulated predicted probabilities over the full available range of IFI values for all three robustness check models and summarize the findings on one plot. Figure \@ref(fig:h1-robustness-plot) shows the results along three robustness specifications, including the full-sample baseline. The only partially significant finding is in the model which excludes territorial campaigns (this sub-sample mostly includes anti-regime campaigns). For low IFI values, campaigns that exclude territorial goals/claims have a higher chance of being nonviolent and the rebels slowly push towards a higher likelihood of violence with the growing IFI value. This (though cautious) finding can be explained by the logic of mass anti-regime mobilization, where a more concentrated ethnic elite decreases the benefits of nonviolent resistance and pushes the rebels toward violent repertoires of contention. For the MENA \& Sub-Saharan Africa subsample (both with and without territorial campaigns) there is no systematic difference between violence and nonviolence across the growing IFI value. Figure \@ref(fig:h1-robustness-plot-appendix) plots simulated predicted probabilities for the baseline and the REWB model, demonstrating practically identical results (see Appendix \ref{appendix-a}). In general, our null result is robust.
 
 ```{r cross-validation-function}
 cross_validation_fun <- function(validation_number = 10,
@@ -436,8 +464,10 @@ cross_validation_fun <- function(validation_number = 10,
   data_realizations    <- data[data[[dep_var]] == 1, ]
   data_nonrealizations <- data[data[[dep_var]] == 0, ]
 
-  # Get substantive coefficient names — drop country FE
-  test_fit   <- glmer(formula_obj, family = binomial("logit"), data = data)
+  # Get substantive coefficient names
+  test_fit   <- glmer(formula_obj, family = binomial("logit"), data = data,
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5)))
   coef_names <- names(fixef(test_fit))  
   n_coefs    <- length(coef_names)
 
@@ -456,11 +486,12 @@ cross_validation_fun <- function(validation_number = 10,
     sample_data <- rbind(data_realizations[samp1, ],
                          data_nonrealizations[samp0, ])
     
-    model <- glmer(formula_obj, family = binomial("logit"), data = sample_data)
+    model <- glmer(formula_obj, family = binomial("logit"), data = sample_data,
+                  control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5)))
     
-    vec_coefs <- fixef(model)                   # fix 2: coef() -> fixef()
-    vec_var   <- diag(vcov(model))              # unchanged — works for glmer
-    # fix 3: removed as.factor(cow) filter — fixef() never contains random effects
+    vec_coefs <- fixef(model)                   
+    vec_var   <- diag(vcov(model))             
     
     idx       <- match(names(vec_coefs), coef_names)
     idx_valid <- !is.na(idx)
@@ -515,11 +546,12 @@ cross_validation_fun <- function(validation_number = 10,
 ```
 
 ```{r cross-val-application}
+#some models did not converge
 cross_val <- cross_validation_fun(data = df_final_methods, dep_var = 'NVC2.1_VIOL', validation_number = 100)
 ```
 
 ```{r h1-model-crossval-table, include = TRUE}
-# Extract main model coefficients and SEs (no FE)
+# Extract main model coefficients and SEs
 main_coefs <- fixef(model1)
 main_se    <- sqrt(diag(vcov(model1)))
 
