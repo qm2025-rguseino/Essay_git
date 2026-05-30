@@ -45,7 +45,7 @@ nrow(NAVCO2.1_regr_extended) # 554 events
 
 ## EPR ethnic groups data
 EPR <- read.csv('datasources/EPR_panel.csv') %>% 
-  rename_with(~ paste0("epr_", .), .cols = 3:ncol(EPR)) %>% 
+  rename_with(~ paste0("epr_", .), .cols = 3:ncol(.)) %>% 
   mutate(cow = countrycode(statename, 'country.name', 'cown')) %>% 
   drop_na(cow) %>% 
   dplyr::select(!c(statename))  
@@ -144,10 +144,10 @@ df_final <- df_comb %>%
     ),
     peace_years_l = dplyr::lag(peace_years, n = 1)
   ) %>%
-  ungroup() %>%   # ← добавь здесь
+  ungroup() %>%  
   mutate_at(vars(starts_with('NVC2.1_')),
             ~replace_na(., 0)) %>% 
-  group_by(cow) %>%        # ← добавь перед лагами
+  group_by(cow) %>%        
   dplyr::mutate(
     elite_structure = case_when(
       epr_egip_groups_count == 0 ~ "No EGIP group",
@@ -216,7 +216,7 @@ df_final <- df_comb %>%
 
 df_final_regr <- df_final %>% 
   dplyr::select(cow, country, year, NVC2.1_NONVIOL, NVC2.1_VIOL, onset_type, NVC2.1_territorial, 
-                log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, log_epr_egippop_l, epr_alonerule_groups_count_l,
+                epr_IFI_l, epr_EFI_l, log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, log_epr_egippop_l, epr_alonerule_groups_count_l,
                 log_gdp_pcap_l, gdp_growth_l,
                 pop_log_l, youthbulge_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, peace_years_l, 
                 region, period)
@@ -235,12 +235,12 @@ group_level_FI <- group_level %>%
     excluded_total = sum(groupsize[status_egip == 0])
   ) %>%
   summarise(
-    IFI_I = sum(
+    epr_IFI_Incl = sum(
       (groupsize[status_egip == 1] /
          included_total[1])^2
     ),
     
-    EFI_E = sum(
+    epr_EFI_Excl = sum(
       (groupsize[status_egip == 0] /
          excluded_total[1])^2
     )
@@ -262,7 +262,7 @@ group_level_ENEG <- group_level %>%
     power_share = power_score / sum(power_score)
   ) %>%
   summarise(
-    ENEG = 1 / sum(power_share^2),
+    epr_ENEG = 1 / sum(power_share^2),
     .groups = "drop"
   )
 
@@ -271,7 +271,7 @@ group_level_hr <- group_level %>%
   filter(status_egip == 1) %>%
   group_by(countryname, year) %>%
   summarise(
-    highest_rank = max(status_pwrrank, na.rm = TRUE),
+    epr_highest_rank = max(status_pwrrank, na.rm = TRUE),
     .groups = "drop"
   )
 
@@ -280,12 +280,10 @@ group_level_monopoly <- group_level %>%
   filter(status_egip == 1) %>%
   group_by(countryname, year) %>%
   summarise(
-    monopoly_dummy = ifelse(any(status_pwrrank == 7, na.rm = TRUE), 1, 0),
+    epr_monopoly_dummy = ifelse(any(status_pwrrank == 7, na.rm = TRUE), 1, 0),
     .groups = "drop"
   )
   
-
-
 ## Merge with data
 group_level_indices <- list(
   group_level_FI,
@@ -294,8 +292,19 @@ group_level_indices <- list(
   group_level_monopoly
 ) %>%
   reduce(full_join,
-         by = c("countryname", "year"))
-df_final_regr <- merge(df_final_regr, group_level_indices, by.x = c("country", "year"), by.y= c("countryname", "year"), all.x = TRUE)
+         by = c("countryname", "year")) %>% 
+  arrange(countryname, year) %>% 
+  group_by(countryname) %>% 
+  mutate(across(
+    starts_with("epr_"),
+    ~ lag(., n = 1),
+    .names = "{.col}_l"
+  )) %>% 
+  ungroup() %>% 
+  mutate(cow = countrycode(countryname, 'country.name', 'cown')) %>% 
+  drop_na(cow) %>% 
+  dplyr::select(!countryname)
+df_final_regr <- merge(df_final_regr, group_level_indices, by = c('cow', 'year'), all.x = TRUE)
 
 ## Save datasets
 write.csv(df_final, 'datasources/df_essay.csv')

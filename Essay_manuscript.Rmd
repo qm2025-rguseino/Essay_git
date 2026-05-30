@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
   include = FALSE # hide code
 )
 
-p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra', 'stargazer', 'sandwich', 'sampleSelection', 'grateful', 'modelsummary', 'bookdown', 'patchwork', 'MASS')
+p_needed <- c('tidyverse', 'mlogit', 'nnet', 'margins', 'marginaleffects', 'broom', 'summarytools', "MASS", 'kableExtra', 'stargazer', 'sandwich', 'sampleSelection', 'grateful', 'modelsummary', 'bookdown', 'patchwork', 'MASS', 'lme4')
 packages <- rownames(installed.packages())
 p_to_install <- p_needed[!(p_needed %in% packages)]
 if (length(p_to_install) > 0) {
@@ -141,6 +141,40 @@ where $\mathbf{X}_{i}$ is the vector of covariates and $\alpha_i$ is a country f
 For uncertainty calculations, we follow a King's simulation approach [@king2000making]. This approach is also well-established in peace science literature [@butcher2016manufacturing]. Instead of reporting coefficients and their significance, we calculate predicted probabilities as the main quantity of interest via an observed value approach (OVA), meaning we simulate the predicted probabilities for all observations and then calculate the mean of them^[We report coefficients only in the cross-validation robustness check]. For the essay, we define `sim_ova_range` function for the OVA simulations, allowing to calculate predicted probabilities in just four lines of code. It also allows for different CI levels, seeds, number of values and focal variable ranges at the researcher's discretion.
 
 \subsection{Results}
+
+```{r}
+re_model <- glmer(NVC2.1_VIOL ~ 
+                    epr_IFI_l + epr_EFI_l + log_epr_egippop_l + 
+                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
+                    v2x_execorr_l + v2x_polyarchy_l +
+                    log_v2regdur_l + peace_years_l + 
+                    (1 | cow),        # random intercept by country
+                  data = df_final_methods,
+                  family = binomial(link = "logit"))
+
+ova_egip_full_m1  <- sim_ova_range(re_model,        
+                                 focal_var = "epr_IFI_l", 
+                                 nsim = 5000,
+                                 vcov_matrix = vcov(re_model))$result %>% mutate(type = "Full Sample")
+
+ggplot(ova_egip_full_m1,
+       aes(x = focal_value, y = mean)) +
+  geom_line(linewidth = 0.9, color = "#C0392B") +
+  geom_hline(yintercept = round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods), 2), 
+             linetype = 'dashed', color = 'grey', alpha = 0.8) + 
+  geom_ribbon(aes(ymin = lower, ymax = upper), 
+              alpha = 0.15, fill = "#C0392B", color = NA) +
+  labs(x     = "Included Fractionalization Index", 
+       y     = "Predicted Probability\n(Violent vs. Nonviolent)", 
+       caption = "1000 simulations, 95% CI") +
+  theme_bw() +
+  theme(
+    axis.title.y     = element_text(margin = margin(r = 10)),
+    panel.grid.minor = element_blank(),
+    plot.caption     = element_text(hjust = 1, color = "grey50")
+  )
+```
+
 
 ```{r h1-modeling}
 model1 <- glm(NVC2.1_VIOL ~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l + log_epr_egippop_l + 
@@ -513,3 +547,16 @@ Finally, we cross-validate the results to check whether the same results hold wh
 \section{Conclusion}
 
 # References
+
+# Appendix {-}
+\appendix
+\renewcommand{\thesection}{\Alph{section}}
+
+## A. First Appendix Section {-}
+
+Content here...
+
+## B. Second Appendix Section {-}
+
+Content here...
+

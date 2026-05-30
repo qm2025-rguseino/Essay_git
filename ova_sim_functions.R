@@ -22,8 +22,9 @@ library(MASS)   # mvrnorm
 # ------------------------------------------------------------
 .draw_S <- function(model, nsim, seed, vcov_matrix = NULL) {
   set.seed(seed)
-  vc <- if (is.null(vcov_matrix)) vcov(model) else vcov_matrix
-  mvrnorm(nsim, coef(model), vc)
+  vc    <- if (is.null(vcov_matrix)) vcov(model) else vcov_matrix
+  coefs <- if (inherits(model, "merMod")) fixef(model) else coef(model)
+  mvrnorm(nsim, coefs, vc)
 }
 
 # logit inverse-link

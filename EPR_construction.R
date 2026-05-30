@@ -63,6 +63,13 @@ panel <- EPR_panel %>%
     discrim_size_sum = sum(size[status %in% discrim_statuses], na.rm = TRUE),
     powerless_size_sum = sum(size[status %in% powerless_statuses], na.rm = TRUE),
     
+    # 18-19. IFI and EFI — Herfindahl-like indices (Hendrix & Salehyan 2019)
+    # EPR size is already a share of total population, so no division needed
+    # IFI = sum of squared population shares of included groups
+    # EFI = sum of squared population shares of excluded groups
+    IFI = sum(size[status %in% egip_statuses]^2, na.rm = TRUE),
+    EFI = sum(size[status %in% meg_statuses]^2,  na.rm = TRUE),
+    
     .groups = "drop"
   ) %>%
   mutate(
@@ -88,7 +95,7 @@ panel <- EPR_panel %>%
   arrange(statename, year)
 
 # --- Save ---
-write.csv(panel, "EPR_panel.csv", row.names = FALSE)
+write.csv(panel, "datasources/EPR_panel.csv", row.names = FALSE)
 
 cat("Done! Rows:", nrow(panel), "\n")
 cat("Preview:\n")
