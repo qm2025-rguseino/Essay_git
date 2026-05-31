@@ -2,7 +2,7 @@ library(dplyr)
 library(tidyr)
 
 # --- Load Data ---
-EPR <- read.csv("EPR.csv", stringsAsFactors = FALSE)
+EPR <- read.csv("datasources/EPR.csv", stringsAsFactors = FALSE)
 
 # --- Classify Statuses ---
 egip_statuses      <- c("MONOPOLY", "DOMINANT", "SENIOR PARTNER", "JUNIOR PARTNER")
