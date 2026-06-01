@@ -15,25 +15,7 @@ options(warn = -1)
 
 #### STEP 1: upload revolutionary events and ethnic data ####
 
-# from Chin disseration "Military Power and Democratization" - extended list of NAVCO events
-# I use this list of events as having the largest number of events
-# NAVCO2.1_regr_extended <- read.csv("datasources/NAVCO2_1_regr_extended_v3.csv", sep=",") %>%
-#   dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow), 
-#                                         countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>% 
-#   dplyr::rename(cow = NVC2.1_loc_cow,
-#                 year = NVC2.1_start_year, end_year = NVC2.1_end_year, NVC2.1_event_name = NVC2.1_camp_name) %>% 
-#   dplyr::mutate(cow = as.numeric(cow),
-#                 NVC2.1_location = countrycode(cow, 'cown', 'country.name'),
-#                 NVC2.1_VIOL = ifelse(NVC2.1_prim_meth == 0,1,0),
-#                 NVC2.1_NONVIOL = ifelse(NVC2.1_prim_meth == 1,1,0),
-#                 NVC2.1_antiregime = ifelse(NVC2.1_camp_goals == 0, 1, 0),
-#                 NVC2.1_territorial = ifelse(NVC2.1_camp_goals == 3, 1, 0)) %>% 
-#   mutate(cow = ifelse(NVC2.1_location == 'Serbia', 345, cow)) %>% #new
-#   drop_na(cow) %>% 
-#   filter(cow > 0) %>% 
-#   dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
-# nrow(NAVCO2.1_regr_extended) # 554 events
-
+#For an extended sample, read "datasources/NAVCO2_1_regr_extended_v3.csv"
 NAVCO2.1 <- read.csv('datasources/NAVCO2.1_regr.csv') %>% 
     dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow),
                                           countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>%
@@ -49,15 +31,6 @@ NAVCO2.1 <- read.csv('datasources/NAVCO2.1_regr.csv') %>%
     drop_na(cow) %>%
     filter(cow > 0) %>%
     dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
-
-# GROWup with ethnic groups data
-# growup <- read.csv('datasources/GROWUPdata2.csv') %>% 
-#   mutate(cow = countrycode(countries_gwid, origin = "gwn", destination = "cown",
-#                            custom_match = c("816" = 816L, "340" = 345L))) %>% 
-#   drop_na(cow) %>% 
-#   rename_with(~ paste0("growup_", .), .cols = 4:ncol(growup)) %>% 
-#   dplyr::select(!c(countries_gwid, countryname))
-# growup <- growup[!duplicated(growup[c('cow', 'year')]), ]
 
 ## EPR ethnic groups data
 EPR <- read.csv('datasources/EPR_panel.csv') %>% 

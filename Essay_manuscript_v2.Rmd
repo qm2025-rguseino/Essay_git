@@ -91,8 +91,6 @@ df_final_methods <- df_final_methods %>%
 
 Previous literature has established that civil resistance campaigns and violent campaigns are often a strategic choice made before the campaign ([@Schock2005], [@Cunninghametal2017]). One strand of this literature emphasizes the role of political opportunities in shaping these choices (). Campaign leaders evaluate the political environment and assess the likely consequences of alternative tactics, including the prospects for mobilization, repression, elite defections, and policy concessions. The underlying assumption is that dissident organizations are more likely to adopt the tactic they expect to offer the greatest probability of achieving their political objectives. The following paragraphs summarize key political opportunities that shape the relative attractiveness of nonviolent and violent resistance.
 
-
-
 A nonviolent campaign is a large-scale collective effort that uses nonviolent methods to achieve major political goal. Such goals may include overthrowing an incumbent government or achieving territorial secession. Common tactics include strikes, boycotts, and sit-ins.
 
 Nonviolent campaigns rely on broad participation and cooperation from large segments of society. Their effectiveness therefore depends on their ability to mobilize supporters, disrupt normal political activity and weaken the regime's sources of support.
