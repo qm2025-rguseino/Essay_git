@@ -15,8 +15,6 @@ options(warn = -1)
 
 #### STEP 1: upload revolutionary events and ethnic data ####
 
-df_panel <- state_panel(start = 1944, end = 2019, by = 'year', partial = 'last', useGW = FALSE)
-
 #For an extended sample, read "datasources/NAVCO2_1_regr_extended_v3.csv"
 NAVCO2.1 <- read.csv('datasources/NAVCO2.1_regr.csv') %>% 
     dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow),

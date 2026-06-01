@@ -50,10 +50,10 @@ if (length(p_to_install) > 0) {
 sapply(p_needed, require, character.only = TRUE)
 options(warn = -1)
 
-download.file(
-  "https://www.zotero.org/styles/apa",
-  destfile = "apa.csl"
-) #download APA citation style
+#download.file(
+#  "https://www.zotero.org/styles/apa",
+#  destfile = "apa.csl"
+#) #download APA citation style
 
 stargazer_opt <- ifelse(knitr::is_latex_output(), "latex", "html")
 ```
