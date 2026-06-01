@@ -17,22 +17,38 @@ options(warn = -1)
 
 # from Chin disseration "Military Power and Democratization" - extended list of NAVCO events
 # I use this list of events as having the largest number of events
-NAVCO2.1_regr_extended <- read.csv("datasources/NAVCO2_1_regr_extended_v3.csv", sep=",") %>%
-  dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow), 
-                                        countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>% 
-  dplyr::rename(cow = NVC2.1_loc_cow,
-                year = NVC2.1_start_year, end_year = NVC2.1_end_year, NVC2.1_event_name = NVC2.1_camp_name) %>% 
-  dplyr::mutate(cow = as.numeric(cow),
-                NVC2.1_location = countrycode(cow, 'cown', 'country.name'),
-                NVC2.1_VIOL = ifelse(NVC2.1_prim_meth == 0,1,0),
-                NVC2.1_NONVIOL = ifelse(NVC2.1_prim_meth == 1,1,0),
-                NVC2.1_antiregime = ifelse(NVC2.1_camp_goals == 0, 1, 0),
-                NVC2.1_territorial = ifelse(NVC2.1_camp_goals == 3, 1, 0)) %>% 
-  mutate(cow = ifelse(NVC2.1_location == 'Serbia', 345, cow)) %>% #new
-  drop_na(cow) %>% 
-  filter(cow > 0) %>% 
-  dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
-nrow(NAVCO2.1_regr_extended) # 554 events
+# NAVCO2.1_regr_extended <- read.csv("datasources/NAVCO2_1_regr_extended_v3.csv", sep=",") %>%
+#   dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow), 
+#                                         countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>% 
+#   dplyr::rename(cow = NVC2.1_loc_cow,
+#                 year = NVC2.1_start_year, end_year = NVC2.1_end_year, NVC2.1_event_name = NVC2.1_camp_name) %>% 
+#   dplyr::mutate(cow = as.numeric(cow),
+#                 NVC2.1_location = countrycode(cow, 'cown', 'country.name'),
+#                 NVC2.1_VIOL = ifelse(NVC2.1_prim_meth == 0,1,0),
+#                 NVC2.1_NONVIOL = ifelse(NVC2.1_prim_meth == 1,1,0),
+#                 NVC2.1_antiregime = ifelse(NVC2.1_camp_goals == 0, 1, 0),
+#                 NVC2.1_territorial = ifelse(NVC2.1_camp_goals == 3, 1, 0)) %>% 
+#   mutate(cow = ifelse(NVC2.1_location == 'Serbia', 345, cow)) %>% #new
+#   drop_na(cow) %>% 
+#   filter(cow > 0) %>% 
+#   dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
+# nrow(NAVCO2.1_regr_extended) # 554 events
+
+NAVCO2.1 <- read.csv('datasources/NAVCO2.1_regr.csv') %>% 
+    dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow),
+                                          countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>%
+    dplyr::rename(cow = NVC2.1_loc_cow,
+                  year = NVC2.1_start_year, end_year = NVC2.1_end_year, NVC2.1_event_name = NVC2.1_camp_name) %>%
+    dplyr::mutate(cow = as.numeric(cow),
+                  NVC2.1_location = countrycode(cow, 'cown', 'country.name'),
+                  NVC2.1_VIOL = ifelse(NVC2.1_prim_meth == 0,1,0),
+                  NVC2.1_NONVIOL = ifelse(NVC2.1_prim_meth == 1,1,0),
+                  NVC2.1_antiregime = ifelse(NVC2.1_camp_goals == 0, 1, 0),
+                  NVC2.1_territorial = ifelse(NVC2.1_camp_goals == 3, 1, 0)) %>%
+    mutate(cow = ifelse(NVC2.1_location == 'Serbia', 345, cow)) %>% 
+    drop_na(cow) %>%
+    filter(cow > 0) %>%
+    dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
 
 # GROWup with ethnic groups data
 # growup <- read.csv('datasources/GROWUPdata2.csv') %>% 
@@ -45,8 +61,7 @@ nrow(NAVCO2.1_regr_extended) # 554 events
 
 ## EPR ethnic groups data
 EPR <- read.csv('datasources/EPR_panel.csv') %>% 
-  rename_with(~ paste0("epr_", .), .cols = 3:ncol(.)) %>% 
-  mutate(cow = countrycode(statename, 'country.name', 'cown')) %>% 
+  rename_with(~ paste0("epr_", .), .cols = 4:ncol(.)) %>% 
   drop_na(cow) %>% 
   dplyr::select(!c(statename))  
 
@@ -104,13 +119,13 @@ vdem_vars <- vdem %>%
 #combine a dataset 
 dfs <- list(
   states,
-  #growup,
   EPR,
   vdem_vars,
   population,
   youth,
   econdata,
-  NAVCO2.1_regr_extended
+  NAVCO2.1
+  #NAVCO2.1_regr_extended
 )
 df_comb <- Reduce(function(x, y) {
   merge(x, y, by = c("cow", "year"), all.x = TRUE)
@@ -306,8 +321,14 @@ group_level_indices <- list(
   dplyr::select(!countryname)
 df_final_regr <- merge(df_final_regr, group_level_indices, by = c('cow', 'year'), all.x = TRUE)
 
+EGC_final <- read.csv('datasources/EGC_final.csv')
+
+df_final_regr <- df_final_regr %>%
+  left_join(
+    EGC_final %>% distinct(loc_cow, year, egip_participated, egip_claimed, egip_participated_claimed),
+    by = c("cow" = "loc_cow", "year")
+  )
+
 ## Save datasets
-write.csv(df_final, 'datasources/df_essay.csv')
-saveRDS(df_final, 'datasources/df_essay.rds')
 write.csv(df_final_regr, 'datasources/df_essay_regr.csv')
 saveRDS(df_final_regr, 'datasources/df_essay_regr.rds')

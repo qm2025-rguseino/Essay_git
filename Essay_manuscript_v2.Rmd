@@ -241,10 +241,10 @@ null_model <- glmer(NVC2.1_VIOL ~
                     family = binomial("logit"))
 
 model1 <- glmer(NVC2.1_VIOL ~ 
-                    epr_IFI_l + epr_EFI_l + 
+                    epr_IFI_l + epr_EFI_l + egip_participated_claimed +
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
                     v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + 
+                    log_v2regdur_l + peace_years_l  +  
                     (1 | cow),        # random intercept by country
                   data = df_final_methods,
                   family = binomial(link = "logit"),
@@ -299,7 +299,7 @@ model1_train  <- glmer(NVC2.1_VIOL ~
                     epr_IFI_l + epr_EFI_l + 
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
                     v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + 
+                    log_v2regdur_l + peace_years_l + egip_participated_claimed + 
                     (1 | cow),        # random intercept by country
                   data = df_final_methods_train,
                   family = binomial(link = "logit"),
@@ -381,7 +381,7 @@ model1_africa <- glmer(NVC2.1_VIOL ~
                     epr_IFI_l + epr_EFI_l + 
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
                     v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + 
+                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + 
                     (1 | cow),
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')),
@@ -392,7 +392,7 @@ model1_noterr <- glmer(NVC2.1_VIOL ~
                     epr_IFI_l + epr_EFI_l + 
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
                     v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + 
+                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + 
                     (1 | cow),
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(NVC2.1_territorial == 0),
@@ -412,7 +412,7 @@ model1_africa_noterr <- glmer(NVC2.1_VIOL ~
                     epr_IFI_l + epr_EFI_l + 
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
                     v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + 
+                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + 
                     (1 | cow),
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')) %>% filter(NVC2.1_territorial == 0),
@@ -489,7 +489,7 @@ cross_validation_fun_glm <- function(validation_number = 10,
   formula_obj <- as.formula(
     paste(dep_var, "~ log_epr_egip_groups_count_l + log_epr_excl_groups_count_l +
     log_epr_egippop_l + log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-    v2x_execorr_l + v2x_polyarchy_l + log_v2regdur_l + peace_years_l + as.factor(cow)")
+    v2x_execorr_l + v2x_polyarchy_l + log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + as.factor(cow)")
   )
 
   # balance the sample by realizations and non-realizations
@@ -596,7 +596,7 @@ cross_validation_fun_glmer <- function(validation_number = 50,
     paste(dep_var, "~ epr_IFI_l + epr_EFI_l +
                     log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
                     v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + 
+                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed +
                     (1 | cow)")
   )
   
