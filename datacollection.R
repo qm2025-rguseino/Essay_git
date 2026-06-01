@@ -15,9 +15,25 @@ options(warn = -1)
 
 #### STEP 1: upload revolutionary events and ethnic data ####
 
-df_panel <- state_panel(start = 1944, end = 2019, by = 'year', partial = 'last', useGW = FALSE)
+# from Chin disseration "Military Power and Democratization" - extended list of NAVCO events
+# I use this list of events as having the largest number of events
+# NAVCO2.1_regr_extended <- read.csv("datasources/NAVCO2_1_regr_extended_v3.csv", sep=",") %>%
+#   dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow), 
+#                                         countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>% 
+#   dplyr::rename(cow = NVC2.1_loc_cow,
+#                 year = NVC2.1_start_year, end_year = NVC2.1_end_year, NVC2.1_event_name = NVC2.1_camp_name) %>% 
+#   dplyr::mutate(cow = as.numeric(cow),
+#                 NVC2.1_location = countrycode(cow, 'cown', 'country.name'),
+#                 NVC2.1_VIOL = ifelse(NVC2.1_prim_meth == 0,1,0),
+#                 NVC2.1_NONVIOL = ifelse(NVC2.1_prim_meth == 1,1,0),
+#                 NVC2.1_antiregime = ifelse(NVC2.1_camp_goals == 0, 1, 0),
+#                 NVC2.1_territorial = ifelse(NVC2.1_camp_goals == 3, 1, 0)) %>% 
+#   mutate(cow = ifelse(NVC2.1_location == 'Serbia', 345, cow)) %>% #new
+#   drop_na(cow) %>% 
+#   filter(cow > 0) %>% 
+#   dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
+# nrow(NAVCO2.1_regr_extended) # 554 events
 
-#For an extended sample, read "datasources/NAVCO2_1_regr_extended_v3.csv"
 NAVCO2.1 <- read.csv('datasources/NAVCO2.1_regr.csv') %>% 
     dplyr::mutate(NVC2.1_loc_cow = ifelse(is.na(NVC2.1_loc_cow),
                                           countrycode(NVC2.1_location, 'country.name', 'cown'), NVC2.1_loc_cow)) %>%
@@ -34,6 +50,15 @@ NAVCO2.1 <- read.csv('datasources/NAVCO2.1_regr.csv') %>%
     filter(cow > 0) %>%
     dplyr::select(!c(NVC2.1_location, NVC2.1_id, NVC2.1_prim_meth, NVC2.1_progress, NVC2.1_event_name, end_year))
 
+# GROWup with ethnic groups data
+# growup <- read.csv('datasources/GROWUPdata2.csv') %>% 
+#   mutate(cow = countrycode(countries_gwid, origin = "gwn", destination = "cown",
+#                            custom_match = c("816" = 816L, "340" = 345L))) %>% 
+#   drop_na(cow) %>% 
+#   rename_with(~ paste0("growup_", .), .cols = 4:ncol(growup)) %>% 
+#   dplyr::select(!c(countries_gwid, countryname))
+# growup <- growup[!duplicated(growup[c('cow', 'year')]), ]
+
 ## EPR ethnic groups data
 EPR <- read.csv('datasources/EPR_panel.csv') %>% 
   rename_with(~ paste0("epr_", .), .cols = 4:ncol(.)) %>% 
@@ -43,9 +68,9 @@ EPR <- read.csv('datasources/EPR_panel.csv') %>%
 states <- build_states_panel(
   start_year = 1944,
   end_year = 2019,
-  exclude_microstates = FALSE, #exclude microstates from the panel 
-  exclude_non_un = FALSE, #excluded non-UN states from the panel
-  exclude_islands = FALSE #exclude most small island developing states from the panel
+  exclude_microstates = TRUE, #exclude microstates from the panel 
+  exclude_non_un = TRUE, #excluded non-UN states from the panel
+  exclude_islands = TRUE #exclude most small island developing states from the panel
 )
 
 # data with socio-economic variables on GDP, GDP growth, oil rents, inequality measures, etc. 
@@ -106,21 +131,16 @@ df_comb <- Reduce(function(x, y) {
   merge(x, y, by = c("cow", "year"), all.x = TRUE)
 }, dfs) %>% arrange(cow, year)
 
-lost_campaigns <- NAVCO2.1 %>%
-  anti_join(states, by = c("cow", "year")) %>%
-  distinct(cow, year, ) %>%
-  mutate(country = countrycode(cow, "cown", "country.name"))
-
 #refine a dataset
 #add logs and lags 
 #Add a single-grpup elite variable
 #lag the egip groups
 df_final <- df_comb %>% 
-  mutate(year = as.numeric(as.character(year))) %>% 
+  mutate(year = as.numeric(as.character(year))) %>%  # ← первым делом
   arrange(cow, year) %>%
   group_by(cow) %>% 
   mutate(
-    onset_type = case_when(         
+    onset_type = case_when(          # ← сначала onset_type
       `NVC2.1_VIOL` == 1 ~ "Violent",
       `NVC2.1_NONVIOL` == 1 ~ "Nonviolent",
       TRUE ~ "No onset"
@@ -309,18 +329,6 @@ df_final_regr <- df_final_regr %>%
     by = c("cow" = "loc_cow", "year")
   )
 
-df_final_regr <- df_final_regr %>% 
-  mutate_at(vars(starts_with('egip_')),
-            ~replace_na(., 0)) %>% 
-  mutate(across(
-    starts_with("egip_"),
-    ~ lag(., n = 1),
-    .names = "{.col}_l"
-  ))
-
 ## Save datasets
 write.csv(df_final_regr, 'datasources/df_essay_regr.csv')
 saveRDS(df_final_regr, 'datasources/df_essay_regr.rds')
-
-#save lost campaigns
-write.csv(lost_campaigns, 'datasources/lost_campaigns.csv')

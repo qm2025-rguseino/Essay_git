@@ -1,6 +1,8 @@
 library(dplyr)
 library(tidyr)
 
+options(warn = -1)
+
 # --- Load Data ---
 EPR <- read.csv("datasources/EPR.csv", stringsAsFactors = FALSE)
 EGC <- read.csv("datasources/EGC2.1_20250930.csv")
@@ -17,7 +19,8 @@ powerless_statuses   <- c("POWERLESS")
 EPR_panel <- EPR %>%
   rowwise() %>%
   mutate(year = list(seq(from, to)),
-         cow = countrycode(gwid, 'gwn', 'cown')) %>%
+         cow = countrycode(gwid, 'gwn', 'cown', custom_match = c("340" = 340, "816" = 816))) %>%
+  drop_na(cow) %>% 
   unnest(year) %>%
   ungroup()
 
@@ -60,7 +63,8 @@ panel <- EPR_panel %>%
 EGC_merged <- EGC %>%
   left_join(
     EPR_panel %>% dplyr::select(gwgroupid, year, status),
-    by = c("EPR_ID" = "gwgroupid", "year" = "year")
+    by = c("EPR_ID" = "gwgroupid", "year" = "year"),
+    relationship = "many-to-one"
   )
 
 # --- Campaign-level variables (first year only) ---
@@ -86,7 +90,3 @@ EGC_final <- EGC_merged %>%
 # --- Save ---
 write.csv(panel,     "datasources/EPR_panel.csv", row.names = FALSE)
 write.csv(EGC_final, "datasources/EGC_final.csv", row.names = FALSE)
-
-cat("Panel rows:", nrow(panel), "\n")
-cat("EGC_final rows:", nrow(EGC_final), "\n")
-print(head(EGC_final, 3))

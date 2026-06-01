@@ -58,14 +58,23 @@ download.file(
 stargazer_opt <- ifelse(knitr::is_latex_output(), "latex", "html")
 ```
 
+```{r collect-data}
+# USE THESE FUNCTIONS FOR DATA COLLECTION
+# DATASETS ARE ALREADY STORED IN THE FOLDER
+#suppressWarnings({source("datacollectionscripts/EPR_construction.R")}) #Tibet (code 711) is dropped
+#suppressWarnings({source('datacollectionscripts/datacollection.R')}) 
+```
+
 ```{r functions}
-source('simulation_functions.R') #use pre-defined simulation functions
-source('ova_sim_functions.R') #use observed value approach (OVA) simulation functions
+source('functions/simulation_functions.R') #use pre-defined simulation functions
+source('functions/ova_sim_functions.R') #use observed value approach (OVA) simulation functions
 
 simulation_number = 1000
 ```
 
 ```{r load-data}
+lost_campaigns_table <- read.csv("datasources/lost_campaigns.csv") %>%
+  dplyr::select(-1)
 df_final_regr <- readRDS('datasources/df_essay_regr.rds') # read a dataset
 # RESTRICT THE DATASET TO ONLY ONSETS
 # TEST THE HYPOTHESES ABOUT THE CHOICE OF METHODS
@@ -89,7 +98,7 @@ df_final_methods <- df_final_methods %>%
 
 \section{Violent and Non-violent Campaign Choice}
 
-Previous literature has established that civil resistance campaigns and violent campaigns are often a strategic choice made before the campaign ([@Schock2005], [@Cunninghametal2017]). One strand of this literature emphasizes the role of political opportunities in shaping these choices (). Campaign leaders evaluate the political environment and assess the likely consequences of alternative tactics, including the prospects for mobilization, repression, elite defections, and policy concessions. The underlying assumption is that dissident organizations are more likely to adopt the tactic they expect to offer the greatest probability of achieving their political objectives. The following paragraphs summarize key political opportunities that shape the relative attractiveness of nonviolent and violent resistance.
+Previous literature has established that civil resistance campaigns and violent campaigns are often a strategic choice made before the campaign [@schock2005unarmed; @Cunninghametal2017]. One strand of this literature emphasizes the role of political opportunities in shaping these choices (). Campaign leaders evaluate the political environment and assess the likely consequences of alternative tactics, including the prospects for mobilization, repression, elite defections, and policy concessions. The underlying assumption is that dissident organizations are more likely to adopt the tactic they expect to offer the greatest probability of achieving their political objectives. The following paragraphs summarize key political opportunities that shape the relative attractiveness of nonviolent and violent resistance.
 
 A nonviolent campaign is a large-scale collective effort that uses nonviolent methods to achieve major political goal. Such goals may include overthrowing an incumbent government or achieving territorial secession. Common tactics include strikes, boycotts, and sit-ins.
 
@@ -129,8 +138,9 @@ Taken together, ethnic fragmentation increases the likelihood of elite defection
 
 Accordingly, we expect that dissident campaigns facing more ethnically fragmented ruling coalitions will be more likely to adopt nonviolent tactics.
 
+<!-- Hypotheses are automatically numerated -->
 \begin{hyp}
-**H1:** Greater ethnic fragmentation in ruling elites increases the likelihood that dissident campaigns adopt nonviolent tactics rather than violent tactics.
+Greater ethnic fragmentation in ruling elites increases the likelihood that dissident campaigns adopt nonviolent tactics rather than violent tactics.
 \end{hyp}
 
 Variation in political opportunities may also arise from differences in the distribution of power among ethnic groups within ruling coalitions. More equally powerful groups possess greater autonomy and capacity to defect, making elite cohesion weaker than in systems dominated by a single group.
@@ -140,21 +150,23 @@ Greater equality in the distribution of power among ethnic groups therefore incr
 From this mechanism, I derive a second hypothesis:
 
 \begin{hyp}
-**H2:** Greater equality in the distribution of power among ethnic groups in the ruling elite increases the likelihood that dissident campaigns adopt nonviolent tactics.
+Greater equality in the distribution of power among ethnic groups in the ruling elite increases the likelihood that dissident campaigns adopt nonviolent tactics.
 \end{hyp}
 
 
 \section{Data and Methods}
 \subsection{Data description}
-Our study employs a panel dataset of `r nrow(df_final_methods)` so-called "maximalist campaigns", a concept first introduced by Chenoweth and Stephan in *Why Civil Resistance Works* book [@chenoweth2011civil]. Following their definition, a campaign is "a series of observable, continuous, purposive mass tactics or events in pursuit of a political objective’, with maximalist objectives encompassing regime change, self-determination, secession, and the expulsion of foreign occupations [@DVN/MHOXDV_2019]. We rely on Nonviolent and Violent Campaigns and Outcomes (NAVCO) 2.1 dataset, which records 384 maximalist campaigns from 1945 to 2013, extended by John Chin in his dissertation to `r nrow(df_final_methods)` campaigns - the version we use [@chin2017military].
+Our study employs a panel dataset of `r nrow(df_final_methods)` so-called "maximalist campaigns", a concept first introduced by Chenoweth and Stephan in *Why Civil Resistance Works* book [@chenoweth2011civil]. Following their definition, a campaign is "a series of observable, continuous, purposive mass tactics or events in pursuit of a political objective’, with maximalist objectives encompassing regime change, self-determination, secession, and the expulsion of foreign occupations [@DVN/MHOXDV_2019]. We rely on Nonviolent and Violent Campaigns and Outcomes (NAVCO) 2.1 dataset, which records 384 maximalist campaigns from 1945 to 2013^[The most significant reason why the number of campaigns we have in the panel dataset differs from the total number of maximalist campaigns concerns country coding. We construct a panel dataset of indepedent country-years based on Correlates of War (CoW) list of independent states. We merge our panel data using NAVCO-assigned CoW country codes. However, in some cases, countries of a campaign location are not independent at the campaign onset year and thus lost from the data we use in the analysis. For example, there is a campaign geographically located in Algeria in 1952, though Algeria gained independence only in 1962. A naive solution would be assigning socio-economic characteristics of the "target" country - France in case of Algeria, though it would severely bias the results as if the campaign took place in France. We partly address this issue by excluding territorial campaigns in the robustness check section. Table \@ref(tab:lost-campaigns-appendix) in Appendix C lists all these lost campaigns.].
 
-The central conceptual distinction is between violent and nonviolent repertoires of contention. Following NAVCO coding rules, nonviolent tactics ‘do not directly threaten or harm the physical wellbeing of the regime, its agents, or its citizens’ and the violent repertoire ‘involves the use of force to physically harm or threaten to harm the opponents’ [@DVN/MHOXDV_2019]. The categories are mutually exclusive. A prominent example of a nonviolent campaign is the German 1989 *Die Wende* and the Cuban Revolution exemplifies a violent campaign. The violence/nonviolence distinction is well-established in the peace science literature and some significant findings have been made using NAVCO dataset [@celestino2013fresh; @manekin2022effective; @cunningham2013understanding], some papers also rely on John Chin's NAVCO 2.1 extension, which we use [@chin2023personalization]. Violence is operationally coded as a binary variable (1 = a campaign takes a violent form, 0 = a campaign takes a nonviolent form).
+The central conceptual distinction is between violent and nonviolent repertoires of contention. Following NAVCO coding rules, nonviolent tactics ‘do not directly threaten or harm the physical wellbeing of the regime, its agents, or its citizens’ and the violent repertoire ‘involves the use of force to physically harm or threaten to harm the opponents’ [@DVN/MHOXDV_2019]. The categories are mutually exclusive. A prominent example of a nonviolent campaign is the German 1989 *Die Wende* and the Cuban Revolution exemplifies a violent campaign. The violence/nonviolence distinction is well-established in the peace science literature and some significant findings have been made using NAVCO dataset [@celestino2013fresh; @manekin2022effective; @cunningham2013understanding]. Violence is operationally coded as a binary variable (1 = a campaign takes a violent form, 0 = a campaign takes a nonviolent form).
 
 Our key independent variables are drawn from the Ethnic Power Relations (EPR) Core Dataset [@vogt2015integrating]. EPR provides information on ethnic groups and their relative access to power. Following Hendrix and Salehyan [-@hendrix2019ethnicity], we operationalize the ethnic ruling elite fragmentation via the *Included fractionalization index (IFI)* and the *Excluded fractionalization index (EFI)*. IFI is "a Herfindahl-like index of all groups counted as ‘included’ (i.e. having access to executive power) during a given country-year", whilst EFI is "a Herfindahl-like index of all groups counted as ‘excluded’ during a given country-year". Thus, a higher IFI indicates a more concentrated ethnic ruling elite and a lower IFI shows that ethnic power is distributed more equally, across many groups. Instead of relying on raw counts, IFI and EFI are more theoretically motivated. If a raw count treats two countries with the ethnic groups in power count of, say, 3 equally, IFI and EFI account for ethnic power distributions.
 
+Another important source of data is the Ethnic Groups in Contention (EGC), a dataset first introduced by Thurber in 2018 [@thurber2018ethnic]. It links NAVCO to EPR and provides additional information on ethnic groups that participated in maximalist campaigns. In a 2026 article, the EGC dataset was updated for NAVCO 2.1, allowing us to use the newest version for our research question [@Bivens26]. What we are interested in is whether any ethnic group in power in a specific country participated in the maximalist campaign. Obviously, ethnic groups that are systematically discriminated could mobilize against the ruling regime given their ethnic (and possibly other) grievances, though empowered ethnic groups could also participate in the campaign, supporting the excluded masses - a potential source of significant confounding. Even though such scenarios sound unrealistic, there are `r sum(df_final_methods$egip_participated, na.rm=TRUE)` where at least one ethnic group in power participated in the campaign. However, in only `r sum(df_final_methods$egip_participated_claimed, na.rm=TRUE)` did such participating ethnic groups in power made an ethnic claim, displaying rather an opportunistic behavior in anticipation of the maximalist campaign success than a sincere will to express ethnic grievances.
+
 <!-- Inspired by Bivens and Thurber [-@Bivens26], we focus on the Ethnic Groups in Power (EGIP) and Marginalized Ethnic Groups (MEG^[We also refer to MEG as "excluded groups", these concepts are used synonymously]) counts. EGIP encompasses groups that exercise political power either via maintaining ethnic dominance or through power-sharing arrangements with junior partners, whilst MEG covers groups that are politically excluded from decision making, including both powerless and purposely discriminated groups. Due to theoretical expectations that a marginal effect of the ethnic groups count on the tactic choice diminishes at higher values, we apply the natural logarithm transformations to both EGIP and MEG counts in the empirical analysis. -->
 
-To address endogeneity and block non-causal paths, we control for a standard set of confounders: GDP per capita in constant PPP dollars [@gapminderGDPCapitaConstant2024]; GDP annual growth rates; logged population size [@unitednationsWorldPopulationProspects2024]; youth bulge - the proportion of young population (15-29) to the total population size; executive corruption scores [@coppedgeVDemCodebookV142024]; polyarchy (electoral democracy) scores [@coppedgeVDemCodebookV142024]; regime duration in years [@coppedgeVDemCodebookV142024]; peace years (years elapsed since the last maximalist campaign in each country); EFI to account for a possible confounding of excluded ethnic groups as well. To address reversed causality, all the independent variables are one-year lagged^[Even though we find it unconvincing that a choice of one tactic over the other could affect IFI and EFI].
+To address endogeneity and block non-causal paths, we control for a standard set of confounders: GDP per capita in constant PPP dollars [@gapminderGDPCapitaConstant2024]; logged population size [@unitednationsWorldPopulationProspects2024]; executive corruption scores and polyarchy (electoral democracy) scores [@coppedgeVDemCodebookV142024]; regime duration in years [@coppedgeVDemCodebookV142024]; peace years (years elapsed since the last maximalist campaign in each country); EFI to account for a possible confounding of excluded ethnic groups as well; we also control whether at least one ethnic group in power participated in the campaign with a binary variable. To address reversed causality, all the independent variables are one-year lagged^[Even though we find it unconvincing that a choice of one tactic over the other could affect IFI and EFI].
 
 \subsection*{Descriptive statistics}
 ```{r descriptive-stats, echo=FALSE, include = TRUE}
@@ -169,9 +181,9 @@ summarydata <- df_final_methods %>%
     Tactics,
     "Included Fractionalization Index"                = epr_IFI_l,
     "Excluded Fractionalization Index"                = epr_EFI_l,
+    "Ethnic Group in Power Participation" = egip_participated_l,
     "ln(GDP per capita)" = log_gdp_pcap_l,
     "ln(Population)"     = pop_log_l,
-    "Youth Bulge"        = youthbulge_l,
     "Polyarchy"          = v2x_polyarchy_l,
     "Executive Corruption" = v2x_execorr_l,
     "ln(Regime Duration)"  = log_v2regdur_l,
@@ -290,12 +302,12 @@ null_model <- glmer(NVC2.1_VIOL ~
                     data   = df_final_methods,
                     family = binomial("logit"))
 
-model1 <- glmer(NVC2.1_VIOL ~ 
-                    epr_IFI_l + epr_EFI_l + egip_participated_claimed +
-                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-                    v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l  +  
-                    (1 | cow),        # random intercept by country
+#define a formula for h1
+formula_h1 <- NVC2.1_VIOL ~ epr_IFI_l + epr_EFI_l + egip_participated_l +
+                    log_gdp_pcap_l + pop_log_l + v2x_polyarchy_l + v2x_execorr_l +
+                    log_v2regdur_l + peace_years_l + (1 | cow)  # random intercept by country
+
+model1 <- glmer(formula_h1,
                   data = df_final_methods,
                   family = binomial(link = "logit"),
                   control = glmerControl(optimizer = "bobyqa",
@@ -345,12 +357,7 @@ test_idx  <- setdiff(1:n_total, train_idx) #all other observations into the test
 
 df_final_methods_train <- df_final_methods[train_idx, ] # train dataset
 
-model1_train  <- glmer(NVC2.1_VIOL ~ 
-                    epr_IFI_l + epr_EFI_l + 
-                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-                    v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + egip_participated_claimed + 
-                    (1 | cow),        # random intercept by country
+model1_train  <- glmer(formula_h1,        # random intercept by country
                   data = df_final_methods_train,
                   family = binomial(link = "logit"),
                   control = glmerControl(optimizer = "bobyqa",
@@ -359,8 +366,7 @@ model1_train  <- glmer(NVC2.1_VIOL ~
 trained_cows <- rownames(ranef(model1_train)$cow) # what countries are estimated?
 df_final_methods_test <- df_final_methods[test_idx, ] %>%
   filter(as.character(cow) %in% trained_cows) %>%  #test is only with the trained countries
-  drop_na(epr_IFI_l, epr_EFI_l, log_gdp_pcap_l, pop_log_l, youthbulge_l,
-          gdp_growth_l, v2x_execorr_l, v2x_polyarchy_l,
+  drop_na(epr_IFI_l, epr_EFI_l, egip_participated_l, log_gdp_pcap_l, pop_log_l, v2x_execorr_l, v2x_polyarchy_l,
           log_v2regdur_l, peace_years_l)
 
 pred_test_prob <- predict(model1_train, newdata = df_final_methods_test, type = "response")  #predict on the test dataset
@@ -427,43 +433,19 @@ Despite an insignificant effect of IFI on a violent choice, the model as a whole
 We conduct four robustness checks. First, given that civil conflicts and a tactic choice are regionally clustered, we estimate an additional model on the Middle East and North Africa (MENA) and Sub-Saharan Africa countries subsample, where violent campaigns are more expected than in other regions. For the full sample, there are `r round(sum(df_final_methods$NVC2.1_VIOL) / nrow(df_final_methods) * 100, 1)`% of violent campaigns, whilst for MENA \& Sub-Saharan Africa there are `r round(sum(df_final_methods[df_final_methods$region %in% c('Middle East & North Africa', 'Sub-Saharan Africa'),]$NVC2.1_VIOL) / nrow(df_final_methods[df_final_methods$region %in% c('Middle East & North Africa', 'Sub-Saharan Africa'),]) * 100, 1)`% of them. Second, territorial campaigns could be more ethnicity-driven and secessionist civil wars along ethnic lines are widely researched in the academic literature [@collier2006political; @denny2014ethnicity; @toft2012self]. For this reason, we estimated three separate models 1) on the MENA & Sub-Saharan Africa subsample, 2) excluding territorial campaigns and 3) both on the MENA & Sub-Saharan Africa sub-sample with excluded territorial campaigns. Finally, following Bell and Jones [-@bell2015explaining], we estimate an alternative Within-Between Random Effect (REWB) model specification. REWB presents a main independent variable in two forms: its demeaned form and a group mean. De-meaning allows to estimate a *within* (essentially fixed) effect and save the underlying assumption of the varying intercept model. An important note here is that we do not compare the model fit of these specifications because of the different samples, which make the models incomparable in terms of model fit measures.
 
 ```{r h1-robustness-modelling}
-model1_africa <- glmer(NVC2.1_VIOL ~ 
-                    epr_IFI_l + epr_EFI_l + 
-                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-                    v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + 
-                    (1 | cow),
+model1_africa <- glmer(formula_h1,
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')),
                   control = glmerControl(optimizer = "bobyqa",
                                        optCtrl = list(maxfun = 2e5))) # filter by the regionss
 
-model1_noterr <- glmer(NVC2.1_VIOL ~ 
-                    epr_IFI_l + epr_EFI_l + 
-                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-                    v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + 
-                    (1 | cow),
+model1_noterr <- glmer(formula_h1,
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(NVC2.1_territorial == 0),
                   control = glmerControl(optimizer = "bobyqa",
                                        optCtrl = list(maxfun = 2e5))) #filter by the non-territorial campaigns
 
-# WARNING! The model did not initially converge
-all_fits <- allFit(model1_noterr) #try all optimizers with a warm start
-summary(all_fits)$llik  #bobyqa has the best llik
-sapply(all_fits, function(m) {
-  tryCatch(fixef(m)["epr_IFI_l"], error = function(e) NA)
-}) #the IFI coefficient is stable
-model1_noterr <- all_fits[["bobyqa"]] # extract best fit
-model1_noterr@optinfo$conv$lme4$messages #the model converged
-
-model1_africa_noterr <- glmer(NVC2.1_VIOL ~ 
-                    epr_IFI_l + epr_EFI_l + 
-                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-                    v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed + 
-                    (1 | cow),
+model1_africa_noterr <- glmer(formula_h1,
     family = binomial(link = "logit"),
     data = df_final_methods %>% filter(region %in% c('Middle East & North Africa', 'Sub-Saharan Africa')) %>% filter(NVC2.1_territorial == 0),
                   control = glmerControl(optimizer = "bobyqa",
@@ -525,7 +507,7 @@ ggplot(ova_model1_robustness,
   )
 ```
 
-We calculate simulated predicted probabilities over the full available range of IFI values for all three robustness check models and summarize the findings on one plot^[An important note here is that a model with excluded territorial campaigns did not initially converge. To address this, we reestimated the model with all the available optimizers with a warm start, with the `bobyqa` optimizer demonstrating a successful convergence. We use this reestimation for simulating predicted probabilities.]. Figure \@ref(fig:h1-robustness-plot) shows the results along three robustness specifications, including the full-sample baseline. The only partially significant finding is in the model which excludes territorial campaigns (this sub-sample mostly includes anti-regime campaigns). For low IFI values, campaigns that exclude territorial goals/claims have a higher chance of being nonviolent and the rebels slowly push towards a higher likelihood of violence with the growing IFI value. This (though cautious) finding can be explained by the logic of mass anti-regime mobilization, where a more concentrated ethnic elite decreases the benefits of nonviolent resistance and pushes the rebels toward violent repertoires of contention. For the MENA \& Sub-Saharan Africa subsample (both with and without territorial campaigns) there is no systematic difference between violence and nonviolence across the growing IFI value. Figure \@ref(fig:h1-robustness-plot-appendix) plots simulated predicted probabilities for the baseline and the REWB model, demonstrating practically identical results (see Appendix A). In general, our null result is robust^[We do not calculate performance metrics for the robustness check specifications due to identification issues and low sample sizes, caused by simultaneous regional/campaign type and train-test subsampling.].
+We calculate simulated predicted probabilities over the full available range of IFI values for all three robustness check models and summarize the findings on one plot. Figure \@ref(fig:h1-robustness-plot) shows the results along three robustness specifications, including the full-sample baseline. The only partially significant finding is in the model which excludes territorial campaigns (this sub-sample mostly includes anti-regime campaigns). For low IFI values, campaigns that exclude territorial goals/claims have a higher chance of being nonviolent and the rebels slowly push towards a higher likelihood of violence with the growing IFI value. This (though cautious) finding can be explained by the logic of mass anti-regime mobilization, where a more concentrated ethnic elite decreases the benefits of nonviolent resistance and pushes the rebels toward violent repertoires of contention. For the MENA \& Sub-Saharan Africa subsample (both with and without territorial campaigns) there is no systematic difference between violence and nonviolence across the growing IFI value. Figure \@ref(fig:h1-robustness-plot-appendix) plots simulated predicted probabilities for the baseline and the REWB model, demonstrating practically identical results (see Appendix A). In general, our null result is robust^[We do not calculate performance metrics for the robustness check specifications due to identification issues and low sample sizes, caused by simultaneous regional/campaign type and train-test subsampling.].
 
 
 ```{r cross-validation-function-glm}
@@ -643,10 +625,9 @@ cross_validation_fun_glmer <- function(validation_number = 50,
                                  dep_var) {
   
   formula_obj <- as.formula(
-    paste(dep_var, "~ epr_IFI_l + epr_EFI_l +
-                    log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
-                    v2x_execorr_l + v2x_polyarchy_l +
-                    log_v2regdur_l + peace_years_l + egip_participated + egip_claimed +
+    paste(dep_var, "~ epr_IFI_l + epr_EFI_l + egip_participated_l +
+                    log_gdp_pcap_l + pop_log_l + v2x_polyarchy_l + v2x_execorr_l +
+                    log_v2regdur_l + peace_years_l  +  
                     (1 | cow)")
   )
   
@@ -770,10 +751,9 @@ cv_se    <- cross_val$combined_se
 var_labels <- c(
   "epr_IFI_l"         = "IFI",
   "epr_EFI_l"         = "EFI",
+  "egip_participated_l" = 'Ethnic Group in Power Participation',
   "log_gdp_pcap_l"               = "ln(GDP per capita)",
   "pop_log_l"                    = "ln(Population)",
-  "youthbulge_l"                 = "Youth Bulge",
-  "gdp_growth_l"                 = "GDP Growth",
   "v2x_execorr_l"                = "Executive Corruption",
   "v2x_polyarchy_l"              = "Polyarchy",
   "log_v2regdur_l"               = "ln(Regime Duration)",
@@ -890,7 +870,7 @@ ova_egip_full_m1_appendix <- ova_egip_full_m1 %>% mutate(type = "RE")
 rewb_model <- glmer(NVC2.1_VIOL ~
                       demeaned_IFI + mean_IFI +
                       demeaned_EFI + mean_EFI +
-                      log_gdp_pcap_l + pop_log_l + youthbulge_l + gdp_growth_l +
+                      log_gdp_pcap_l + pop_log_l +
                       v2x_execorr_l + v2x_polyarchy_l +
                       log_v2regdur_l + peace_years_l +
                       (1 | cow),
@@ -945,5 +925,33 @@ ggplot(ova_model1_robustness_appendix,
   )
 ```
 
+\newpage
 
+## Appendix C: Campaigns excluded from the empirical analysis due to country coding issues {#appendix-c}
+```{r lost-campaigns-appendix, include = TRUE}
+lost_campaigns_table %>%
+  arrange(country, year) %>%
+  kbl(
+    booktabs  = TRUE,
+    longtable = TRUE,                # allows table to span multiple pages
+    caption   = "Campaigns excluded from the analysis sample due to states panel coverage",
+    label     = "lost-campaigns-appendix",
+    col.names = c("COW code", "Year", "Country"),
+    align     = c("c", "c", "l")
+  ) %>%
+  kable_styling(
+    latex_options = c("striped", "repeat_header"),
+    full_width    = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE) %>%
+  footnote(
+    general           = paste0(
+      "N = ", nrow(lost_campaigns_table), " campaigns. ",
+      "For the reasons os exclusion: see a footnote in the introduction"
+    ),
+    general_title     = "Note:",
+    footnote_as_chunk = TRUE,
+    threeparttable    = TRUE
+  )
+```
 
