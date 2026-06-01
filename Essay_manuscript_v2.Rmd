@@ -2,10 +2,10 @@
 title: "**Guns or Gandhi: Ethnic Elite Composition and Dissident Tactics in Civil Conflicts**"
 author: 
   - "Ruslan Guseinov"
-  - "Maaike Arienne"
+  - "Maaike Arienne Zeelen"
 output:
     bookdown::pdf_document2:
-    toc: true
+ #   toc: true
     number_sections: false
   #pdf_document:
   #  toc: true
@@ -84,15 +84,67 @@ df_final_methods <- df_final_methods %>%
   ungroup()
 ```
 
-**Keywords:** ethnic conflict, ethnic power relations, civil resistance, maximalist campaigns
 
 \section{Introduction}
 
-\section{Theory \& Hypotheses}
+\section{Violent and Non-violent Campaign Choice}
+
+Previous literature has established that civil resistance campaigns and violent campaigns are often a strategic choice made before the campaign ([@Schock2005], [@Cunninghametal2017]). One strand of this literature emphasizes the role of political opportunities in shaping these choices (). Campaign leaders evaluate the political environment and assess the likely consequences of alternative tactics, including the prospects for mobilization, repression, elite defections, and policy concessions. The underlying assumption is that dissident organizations are more likely to adopt the tactic they expect to offer the greatest probability of achieving their political objectives. The following paragraphs summarize key political opportunities that shape the relative attractiveness of nonviolent and violent resistance.
+
+
+
+A nonviolent campaign is a large-scale collective effort that uses nonviolent methods to achieve major political goal. Such goals may include overthrowing an incumbent government or achieving territorial secession. Common tactics include strikes, boycotts, and sit-ins.
+
+Nonviolent campaigns rely on broad participation and cooperation from large segments of society. Their effectiveness therefore depends on their ability to mobilize supporters, disrupt normal political activity and weaken the regime's sources of support.
+
+As nonviolent resistance depends on mass participation, repression can substantially reduce its effectiveness. Arrests, violence, and intimidation increase the costs of participation and may discourage potential supporters from joining collective action (). Repression can also disrupt organizational networks by targeting leaders and activists who coordinate protest activities ().
+
+[Paper] showed that a key mechanism through which nonviolent campaigns succeed is by inducing defections among regime supporters. When political elites, bureaucrats, or members of the security forces withdraw their support from the incumbent government, the regime's capacity to govern and repress dissent is weakened ().
+
+In addition to limiting repression, regimes may choose to negotiate or make concessions in response to nonviolent mobilization. When dissidents expect that peaceful collective action can generate meaningful concessions, the expected benefits of nonviolent tactics increase relative to violent alternatives.
+
+Nonviolent resistance is therefore most attractive when dissidents expect high levels of participation, a substantial likelihood of elite or security-force defections, limited repression, and a reasonable prospect of political concessions.
+
+
+Violent campaigns involve the use of armed force or coercive violence to achieve large political objectives. Unlike nonviolent campaigns, violent resistance does not depend on broad participation in the same way and can be sustained by smaller, more centralized organizations.
+
+Because violent campaigns do not rely on mass mobilization, they may become relatively more attractive when conditions make large-scale participation in nonviolent resistance difficult. In particular, severe repression can raise the costs of open collective action, reducing the feasibility of sustained nonviolent mobilization.
+
+Violent resistance may also be more likely when opportunities for elite or security-force defection are limited. When regimes maintain cohesive ruling coalitions and reliable coercive institutions, nonviolent campaigns are less able to generate the defections that often undermine incumbent governments.
+
+Consequently, political environments characterized by strong elite cohesion, effective repression, and low prospects for defection tend to increase the relative attractiveness of violent forms of resistance.
+
+
+\section{Ethnic Composition and Campaign Tactic}
+
+Political opportunities play a central role in shaping whether dissident campaigns adopt violent or nonviolent strategies. Campaigns evaluate their prospects of success based on expectations about elite defections, repression, and political concessions, and choose the tactic that appears most likely to achieve their objectives.
+
+This study argues that variation in these political opportunities is structured by the ethnic composition of ruling elites. Ethnic fragmentation shapes elite cohesion and thereby influences the likelihood of defection, the effectiveness of repression, and the probability of concessions.
+
+Ethnically heterogeneous ruling coalitions are more vulnerable to elite defection because political loyalty is often embedded in ethnic networks that provide alternative bases of support outside the regime. This increases the likelihood that elites withdraw support under conditions of sustained mobilization.
+
+Ethnic divisions can also weaken coercive capacity by generating coordination problems within security forces and governing institutions, reducing the state’s ability to carry out sustained repression.
+
+In addition, fragmented ruling coalitions may be more likely to pursue negotiated settlements, as internal divisions increase the risks associated with prolonged conflict and make concessions a more attractive option for regime survival.
+
+Taken together, ethnic fragmentation increases the likelihood of elite defections, weakens repression, and increases the probability of concessions. These conditions make nonviolent resistance more effective relative to violent forms of contention.
+
+Accordingly, we expect that dissident campaigns facing more ethnically fragmented ruling coalitions will be more likely to adopt nonviolent tactics.
 
 \begin{hyp}
- A more fragmented ethnic ruling elite increases the likelihood that dissident campaigns adopt violent tactics over nonviolent tactics.
+**H1:** Greater ethnic fragmentation in ruling elites increases the likelihood that dissident campaigns adopt nonviolent tactics rather than violent tactics.
 \end{hyp}
+
+Variation in political opportunities may also arise from differences in the distribution of power among ethnic groups within ruling coalitions. More equally powerful groups possess greater autonomy and capacity to defect, making elite cohesion weaker than in systems dominated by a single group.
+
+Greater equality in the distribution of power among ethnic groups therefore increases the likelihood of elite defection and reduces the effectiveness of repression.
+
+From this mechanism, I derive a second hypothesis:
+
+\begin{hyp}
+**H2:** Greater equality in the distribution of power among ethnic groups in the ruling elite increases the likelihood that dissident campaigns adopt nonviolent tactics.
+\end{hyp}
+
 
 \section{Data and Methods}
 \subsection{Data description}
