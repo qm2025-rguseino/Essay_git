@@ -187,7 +187,6 @@ df_final <- df_comb %>%
          log_epr_egip_groups_count_l = log(epr_egip_groups_count_l + 1),
          log_epr_exclpop_l = log(epr_exclpop_l + 0.1),
          log_epr_lexclpop_l = log(epr_lexclpop_l + 0.1),
-         log_epr_egippop_l = log(epr_egippop_l + 0.1),
          log_epr_legippop_l = log(epr_legippop_l + 0.1),
          log_epr_discrimpop_l = log(epr_discrimpop_l + 0.1),
          log_epr_ldiscrimpop_l = log(epr_ldiscrimpop_l + 0.1),
@@ -209,8 +208,8 @@ df_final <- df_comb %>%
 
 df_final_regr <- df_final %>% 
   dplyr::select(cow, country, year, NVC2.1_NONVIOL, NVC2.1_VIOL, onset_type, NVC2.1_territorial, 
-                epr_IFI_l, epr_EFI_l, log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, log_epr_egippop_l, epr_alonerule_groups_count_l,
-                log_gdp_pcap_l, gdp_growth_l,
+                log_epr_egip_groups_count_l, log_epr_excl_groups_count_l, log_epr_powershare_groups_count_l, epr_egippop_l, epr_alonerule_groups_count_l,
+                epr_IFI_l, epr_EFI_l, log_gdp_pcap_l, gdp_growth_l,
                 pop_log_l, youthbulge_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, peace_years_l, 
                 region, period)
 
@@ -228,12 +227,12 @@ group_level_FI <- group_level %>%
     excluded_total = sum(groupsize[status_egip == 0])
   ) %>%
   summarise(
-    epr_IFI_Incl = sum(
+    epr_IFI_incl = sum(
       (groupsize[status_egip == 1] /
          included_total[1])^2
     ),
     
-    epr_EFI_Excl = sum(
+    epr_EFI_excl = sum(
       (groupsize[status_egip == 0] /
          excluded_total[1])^2
     )
@@ -255,9 +254,12 @@ group_level_ENEG <- group_level %>%
     power_share = power_score / sum(power_score)
   ) %>%
   summarise(
-    epr_ENEG = 1 / sum(power_share^2),
+    max_power_share = max(power_share),
     .groups = "drop"
   )
+
+group_level_ENEG <- group_level_ENEG %>%
+  mutate(max_power_share = 1 - max_power_share)
 
 ## Create alternative measure for power equality
 group_level_hr <- group_level %>%
@@ -316,9 +318,44 @@ df_final_regr <- df_final_regr %>%
     .names = "{.col}_l"
   ))
 
+df_final_methods <- df_final_regr %>% 
+  filter(onset_type %in% c('Nonviolent', 'Violent'))
+
+## Reverse IFI and EFI
+df_final_methods <- df_final_methods %>%
+  mutate(epr_IFI_l = 1 - epr_IFI_l,
+         epr_EFI_l = 1 - epr_EFI_l)
+
+df_final_methods <- df_final_methods %>%
+  group_by(cow) %>%
+  mutate(
+    mean_IFI     = mean(epr_IFI_l, na.rm = TRUE), 
+    mean_EFI     = mean(epr_EFI_l, na.rm = TRUE),
+    demeaned_IFI = epr_IFI_l - mean_IFI,
+    demeaned_EFI = epr_EFI_l - mean_EFI
+  ) %>%
+  ungroup()
+
+df_final_methods <- df_final_methods %>%
+  mutate(epr_highest_rank = case_when(
+    epr_highest_rank %in% c(7, 6) ~ 0,  # Monopoly (7) and Dominant (6) = 0
+    epr_highest_rank == 5 ~ 1,          # Senior Partner = 1
+    TRUE ~ NA_real_                     # Handle unexpected values
+  ))
+
+df_final_methods <- df_final_methods %>%
+  group_by(cow) %>%
+  mutate(
+    mean_epr_highest_rank     = mean(epr_highest_rank, na.rm = TRUE), 
+    demeaned_epr_highest_rank = epr_highest_rank - mean_epr_highest_rank,
+  ) %>%
+  ungroup()
+
 ## Save datasets
 write.csv(df_final_regr, 'datasources/df_essay_regr.csv')
 saveRDS(df_final_regr, 'datasources/df_essay_regr.rds')
+
+saveRDS(df_final_methods, file = "datasources/df_EthnicElite_DissidentTactics.rds")
 
 #save lost campaigns
 write.csv(lost_campaigns, 'datasources/lost_campaigns.csv')
