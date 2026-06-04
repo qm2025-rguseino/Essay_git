@@ -29,12 +29,12 @@ if (length(p_to_install) > 0) {
 sapply(p_needed, require, character.only = TRUE)
 
 ## Load functions
-source('functions/simulation_functions.R') # use pre-defined simulation functions
 source('functions/ova_sim_functions.R')    # use observed value approach (OVA) simulation functions
 
 ## Load dataset
 df <- readRDS('datasources/df_EthnicElite_DissidentTactics.rds')
-
+lost_campaigns_table <- read.csv("datasources/lost_campaigns.csv") %>%
+  dplyr::select(-1) #load data on lost_campaigns (read the manuscript)
 
 
 ### Descriptive statistics ###--------------------------------------------------
@@ -186,6 +186,10 @@ model1 <- glmer(formula_h1,
                 family = binomial(link = "logit"),
                 control = glmerControl(optimizer = "bobyqa",
                                        optCtrl = list(maxfun = 2e5))) # apply an optimizer for convergence
+all_fits_m1 <- allFit(model1)
+ok_fits  <- all_fits_m1[summary(all_fits_m1)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+model1  <- ok_fits[[which.max(llik_vals)]]
 
 ## Simulate predicted probabilities (Observed value approach)
 simulation_number = 1000
@@ -245,8 +249,11 @@ qqline(re)
 cook_obs <- cooks.distance(influence(model1, obs=TRUE))
 
 ## Rerun model without influential outliers
-model_obs <- update(model1, data = df[cook_obs <= 4/length(cook_obs), ])
-
+model_obs <- glmer(formula_h1,
+                   data    = df[cook_obs <= 4/length(cook_obs), ],
+                   family  = binomial(link = "logit"),
+                   control = glmerControl(optimizer = "bobyqa",
+                                          optCtrl   = list(maxfun = 2e5)))
 
 ## Check Linearity of continuous predictors on the logit scale
 model1_splines <- glmer(NVC2.1_VIOL ~ ns(epr_IFI_l, df = 3) + ns(epr_EFI_l, df = 3)  + egip_participated_l +
@@ -256,7 +263,10 @@ model1_splines <- glmer(NVC2.1_VIOL ~ ns(epr_IFI_l, df = 3) + ns(epr_EFI_l, df =
                 family = binomial(link = "logit"),
                 control = glmerControl(optimizer = "bobyqa",
                                        optCtrl = list(maxfun = 2e5)))
-
+all_fits_m1 <- allFit(model1)
+ok_fits  <- all_fits_m1[summary(all_fits_m1)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+model1  <- ok_fits[[which.max(llik_vals)]]
 
 ### Create confusion matrix ###
 ## Set same seed as simulations for reproducibility

@@ -66,7 +66,6 @@ stargazer_opt <- ifelse(knitr::is_latex_output(), "latex", "html")
 ```
 
 ```{r functions}
-source('functions/simulation_functions.R') #use pre-defined simulation functions
 source('functions/ova_sim_functions.R') #use observed value approach (OVA) simulation functions
 
 simulation_number = 1000
@@ -75,7 +74,7 @@ simulation_number = 1000
 ```{r load-data}
 lost_campaigns_table <- read.csv("datasources/lost_campaigns.csv") %>%
   dplyr::select(-1)
-df_final_regr <- readRDS('datasources/df_essay_regr.rds') # read a dataset
+df_final_regr <- readRDS('datasources/df_EthnicElite_DissidentTactics.rds') # read a dataset
 # RESTRICT THE DATASET TO ONLY ONSETS
 # TEST THE HYPOTHESES ABOUT THE CHOICE OF METHODS
 df_final_methods <- df_final_regr %>% 

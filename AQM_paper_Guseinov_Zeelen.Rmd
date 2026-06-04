@@ -60,7 +60,6 @@ if (length(p_to_install) > 0) {
 sapply(p_needed, require, character.only = TRUE)
 
 ## Load functions
-source('functions/simulation_functions.R') # use pre-defined simulation functions
 source('functions/ova_sim_functions.R')    # use observed value approach (OVA) simulation functions
 
 ## Load dataset
@@ -315,6 +314,13 @@ model2 <- glmer(formula_h2,
                 family = binomial(link = "logit"),
                 control = glmerControl(optimizer = "bobyqa",
                                        optCtrl = list(maxfun = 2e5))) # apply an optimizer for convergence
+
+#WARNING: A convergence issue occured. Reestiamte a model with a warm start
+all_fits_m2 <- allFit(model2)
+ok_fits  <- all_fits_m2[summary(all_fits_m2)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+model2  <- ok_fits[[which.max(llik_vals)]]
+model2@optinfo$conv$lme4 #model converged
 
 ## Simulate predicted probabilities (Observed value approach)
 ova_egip_full_m2  <- sim_ova_range(model2,        
@@ -970,6 +976,11 @@ model1_splines <- glmer(NVC2.1_VIOL ~ ns(epr_IFI_l, df = 3) + ns(epr_EFI_l, df =
                         family = binomial(link = "logit"),
                         control = glmerControl(optimizer = "bobyqa",
                                                optCtrl = list(maxfun = 2e5)))
+#WARNING: A convergence issue occured. Reestiamte a model with a warm start
+all_fits_m1splines <- allFit(model1_splines)
+ok_fits  <- all_fits_m1splines[summary(all_fits_m1splines)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+model1_splines  <- ok_fits[[which.max(llik_vals)]]
 
 ## Check Linearity of continuous predictors on the logit scale
 model2_splines <- glmer(NVC2.1_VIOL ~ ns(epr_highest_rank, df = 3) + ns(epr_EFI_l, df = 3)  + egip_participated_l +
@@ -979,22 +990,38 @@ model2_splines <- glmer(NVC2.1_VIOL ~ ns(epr_highest_rank, df = 3) + ns(epr_EFI_
                         family = binomial(link = "logit"),
                         control = glmerControl(optimizer = "bobyqa",
                                                optCtrl = list(maxfun = 2e5)))
+#WARNING: A convergence issue occured. Reestiamte a model with a warm start
+all_fits_m2splines <- allFit(model2_splines)
+ok_fits  <- all_fits_m2splines[summary(all_fits_m2splines)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+model2_splines  <- ok_fits[[which.max(llik_vals)]]
+
+#Models converged
+#model1_splines@optinfo$conv$lme4
+#model2_splines@optinfo$conv$lme4
 ```
 
 ```{r influence-diagnostics}
 ## Calculate cook's distance
-cook_obs <- cooks.distance(influence(model1, obs=TRUE))
+cook_obs_m1 <- cooks.distance(influence(model1, obs=TRUE))
 
 ## Rerun model without influential outliers
-model_obs <- update(model1, data = df[cook_obs <= 4/length(cook_obs), ])
+model_obs_m1 <- glmer(formula_h1,
+                data = df[cook_obs_m1 <= 4/length(cook_obs_m1), ],
+                family = binomial(link = "logit"),
+                control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5))) # apply an optimizer for convergence
 
 
 ## Calculate cook's distance
-cook_obs <- cooks.distance(influence(model1, obs=TRUE))
+cook_obs_m2 <- cooks.distance(influence(model2, obs=TRUE))
 
 ## Rerun model without influential outliers
-model_obs <- update(model1, data = df[cook_obs <= 4/length(cook_obs), ])
-
+model_obs_m2 <- glmer(formula_h2,
+                data = df[cook_obs_m2 <= 4/length(cook_obs_m2), ],
+                family = binomial(link = "logit"),
+                control = glmerControl(optimizer = "bobyqa",
+                                       optCtrl = list(maxfun = 2e5))) # apply an optimizer for convergence
 ```
 
 
@@ -1019,6 +1046,12 @@ rewb_model <- glmer(NVC2.1_VIOL ~
                       (1 | cow),
                     data   = df,
                     family = binomial("logit"))
+#WARNING: A convergence issue occured. Reestiamte a model with a warm start
+all_fits_rewb_model <- allFit(rewb_model)
+ok_fits  <- all_fits_rewb_model[summary(all_fits_rewb_model)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+rewb_model  <- ok_fits[[which.max(llik_vals)]]
+#rewb_model@optinfo$conv$lme4 #model converged
 
 ova_egip_full_rewb  <- sim_ova_range(rewb_model,        
                                      focal_var = "mean_IFI", 
@@ -1082,6 +1115,12 @@ rewb_model <- glmer(NVC2.1_VIOL ~
                       (1 | cow),
                     data   = df,
                     family = binomial("logit"))
+#WARNING: A convergence issue occured. Reestiamte a model with a warm start
+all_fits_rewb_model <- allFit(rewb_model)
+ok_fits  <- all_fits_rewb_model[summary(all_fits_rewb_model)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+rewb_model  <- ok_fits[[which.max(llik_vals)]]
+#rewb_model@optinfo$conv$lme4 #model converged
 
 ova_egip_full_rewb  <- sim_ova_range(rewb_model,        
                                      focal_var = "mean_epr_highest_rank", 
@@ -1216,7 +1255,12 @@ model2_noterr <- glmer(formula_h2,
                        data = df %>% filter(NVC2.1_territorial == 0),
                        control = glmerControl(optimizer = "bobyqa",
                                               optCtrl = list(maxfun = 2e5))) #filter by the non-territorial campaigns
-
+#WARNING: A convergence issue occured. Reestiamte a model with a warm start
+all_fits_model2_noterr <- allFit(model2_noterr)
+ok_fits  <- all_fits_model2_noterr[summary(all_fits_model2_noterr)$which.OK]
+llik_vals <- sapply(ok_fits, logLik)
+model2_noterr  <- ok_fits[[which.max(llik_vals)]]
+#model2_noterr@optinfo$conv$lme4 #model converged
 
 ova_egip_africa_m2  <- sim_ova_range(model2_africa,        
                                      focal_var = "epr_highest_rank", 

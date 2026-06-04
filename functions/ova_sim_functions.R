@@ -102,6 +102,9 @@ sim_ova_range <- function(model,
   
   S <- .draw_S(model, nsim, seed, vcov_matrix)
   X <- model.matrix(model)
+  re        <- ranef(model)$cow                          # random intercepts per country
+  group_ids <- as.character(model@flist$cow)             # which country each row belongs to
+  obs_re    <- re[group_ids, "(Intercept)"]              # vector, length = nrow(X)
   
   # Check focal variable exists in model matrix
   col_idx <- which(colnames(X) == focal_var)
@@ -137,7 +140,7 @@ sim_ova_range <- function(model,
   # For each scenario and each simulation draw: average Pr(Y=1) across obs
   val <- matrix(NA, nrow = nsim, ncol = n_scenarios)
   for (i in seq_len(n_scenarios)) {
-    val[, i] <- apply(S, 1, function(s) mean(.inv_logit(cases[, , i] %*% s)))
+    val[, i] <- apply(S, 1, function(s) mean(.inv_logit(cases[, , i] %*% s + obs_re))) #add a random effect
   }
   
   result <- data.frame(

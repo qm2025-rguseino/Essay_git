@@ -352,8 +352,8 @@ df_final_methods <- df_final_methods %>%
   ungroup()
 
 ## Save datasets
-write.csv(df_final_regr, 'datasources/df_essay_regr.csv')
-saveRDS(df_final_regr, 'datasources/df_essay_regr.rds')
+#write.csv(df_final_regr, 'datasources/df_EthnicElite_DissidentTactics.csv')
+#saveRDS(df_final_regr, 'datasources/df_EthnicElite_DissidentTactics.rds')
 
 saveRDS(df_final_methods, file = "datasources/df_EthnicElite_DissidentTactics.rds")
 
