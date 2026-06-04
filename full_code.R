@@ -51,7 +51,7 @@ summarydata <- df %>%
     # Main independent variable for Hypothesis 1
     "Included Fractionalization Index" = epr_IFI_l,
     # Main independent variable for Hypothesis 2
-    "Ethnic Power Fragmentation Index"    = max_power_share,
+    "Ethnic Power Fragmentation Index"    = epr_highest_rank,
     
     # Control variables
     "Excluded Fractionalization Index"                = epr_EFI_l,
@@ -154,7 +154,7 @@ variance_decomp <- function(data, var, group) {
 }
 
 ## Define key independent variables
-vars <- c("epr_IFI_l", "max_power_share")
+vars <- c("epr_IFI_l", "epr_highest_rank")
 
 ## Decompose variance by country
 variance_results_country <- map_dfr(
@@ -360,7 +360,7 @@ bind_rows(conf_df, metrics_df) %>%
 
 ### H2: Analysis ###------------------------------------------------------------
 ## Define a formula for H2
-formula_h2 <- NVC2.1_VIOL ~ max_power_share + epr_EFI_l + egip_participated_l +
+formula_h2 <- NVC2.1_VIOL ~ epr_highest_rank + epr_EFI_l + egip_participated_l +
   log_gdp_pcap_l + pop_log_l + v2x_polyarchy_l + v2x_execorr_l +
   log_v2regdur_l + peace_years_l + (1 | cow)  # random intercept by country
 
@@ -372,7 +372,7 @@ model2 <- glmer(formula_h2,
 
 ## Simulate predicted probabilities (Observed value approach)
 ova_egip_full_m2  <- sim_ova_range(model2,        
-                                   focal_var = "max_power_share", 
+                                   focal_var = "epr_highest_rank", 
                                    nsim = simulation_number,
                                    vcov_matrix = vcov(model2))$result %>% mutate(type = "Full Sample")
 
@@ -385,8 +385,8 @@ ggplot(ova_egip_full_m2,
   geom_ribbon(aes(ymin = lower, ymax = upper), 
               alpha = 0.15, fill = "#C0392B", color = NA) +
   geom_rug(
-    data = df %>% drop_na(max_power_share),
-    aes(x = max_power_share),
+    data = df %>% drop_na(epr_highest_rank),
+    aes(x = epr_highest_rank),
     inherit.aes = FALSE,
     color = "#C0392B", alpha = 0.3,
     sides = "b"          # bottom only
@@ -467,7 +467,7 @@ trained_cows <- rownames(ranef(model2_train)$cow)
 ## Construct test dataset
 df_test <- df[test_idx, ] %>%
   filter(as.character(cow) %in% trained_cows) %>%  # test is only with the trained countries
-  drop_na(max_power_share, egip_participated_l, log_gdp_pcap_l, 
+  drop_na(epr_highest_rank, egip_participated_l, log_gdp_pcap_l, 
           pop_log_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, 
           peace_years_l) # remove observations with missing values in model covariates
 
@@ -614,11 +614,11 @@ model2_noterr <- glmer(formula_h2,
 
 
 ova_egip_africa_m2  <- sim_ova_range(model2_africa,        
-                                     focal_var = "max_power_share", 
+                                     focal_var = "epr_highest_rank", 
                                      nsim = simulation_number,
                                      vcov_matrix = vcov(model1_africa))$result %>% mutate(type = "MENA & Sub-Saharan Africa")
 ova_egip_noterr_m2  <- sim_ova_range(model2_noterr,        
-                                     focal_var = "max_power_share", 
+                                     focal_var = "epr_highest_rank", 
                                      nsim = simulation_number,
                                      vcov_matrix = vcov(model1_noterr))$result %>% mutate(type = "Excl. territorial campaigns")
 
@@ -837,7 +837,7 @@ comparison_df %>%
 ### H2: Apply cross validation function ###-------------------------------------
 
 cross_val <- cross_validation_fun_glmer(data = df, dep_var = 'NVC2.1_VIOL', validation_number = val_num,
-                                        main_iv = "max_power_share")
+                                        main_iv = "epr_highest_rank")
 
 
 # Extract main model coefficients and SEs
@@ -849,7 +849,7 @@ cv_coefs <- cross_val$combined_coefs
 cv_se    <- cross_val$combined_se
 
 var_labels <- c(
-  "max_power_share"         = "Ethnic Power Fragmentation Index",
+  "epr_highest_rank"         = "Ethnic Power Fragmentation Index",
   "epr_EFI_l"         = "EFI",
   "egip_participated_l" = 'Ethnic Group in Power Participation',
   "log_gdp_pcap_l"               = "ln(GDP per capita)",
@@ -1046,8 +1046,8 @@ ggplot(ova_model1_robustness_appendix,
 ova_egip_full_m2_appendix <- ova_egip_full_m2 %>% mutate(type = "RE")
 
 rewb_model <- glmer(NVC2.1_VIOL ~
-                      demeaned_max_power_share +
-                      mean_max_power_share +
+                      demeaned_epr_highest_rank +
+                      mean_epr_highest_rank +
                       demeaned_EFI + mean_EFI +
                       log_gdp_pcap_l + pop_log_l +
                       v2x_execorr_l + v2x_polyarchy_l +
@@ -1057,7 +1057,7 @@ rewb_model <- glmer(NVC2.1_VIOL ~
                     family = binomial("logit"))
 
 ova_egip_full_rewb  <- sim_ova_range(rewb_model,        
-                                     focal_var = "mean_max_power_share", 
+                                     focal_var = "mean_epr_highest_rank", 
                                      nsim = simulation_number,
                                      vcov_matrix = vcov(rewb_model))$result %>% mutate(type = "REWB")
 
@@ -1071,10 +1071,10 @@ ova_model2_robustness_appendix <- bind_rows(
   )))
 
 rug_data <- bind_rows(
-  df %>% drop_na(max_power_share) %>%
-    mutate(type = "RE", rug_x = max_power_share),
+  df %>% drop_na(epr_highest_rank) %>%
+    mutate(type = "RE", rug_x = epr_highest_rank),
   df %>% drop_na(mean_IFI) %>%
-    mutate(type = "REWB", rug_x = max_power_share)
+    mutate(type = "REWB", rug_x = epr_highest_rank)
 ) %>%
   mutate(type = factor(type, levels = c("RE", "REWB")))
 
