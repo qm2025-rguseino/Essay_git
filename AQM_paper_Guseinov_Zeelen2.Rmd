@@ -38,7 +38,6 @@ knitr::opts_chunk$set(
 
 stargazer_opt <- ifelse(knitr::is_latex_output(), "latex", "html")
 
-### Set up ###------------------------------------------------------------------
 ## Clear environment
 rm(list = ls())
 
@@ -67,7 +66,6 @@ if (length(p_to_install) > 0) {
 sapply(p_needed, require, character.only = TRUE)
 
 ## Load functions
-source('functions/simulation_functions.R') # use pre-defined simulation functions
 source('functions/ova_sim_functions.R')    # use observed value approach (OVA) simulation functions
 
 ## Load dataset
@@ -92,44 +90,25 @@ The paper contributes to the literature on civil resistance and ethnic politics 
 
 Previous literature has established that civil resistance campaigns and violent campaigns are often a strategic choice made before the campaign [@schock2005unarmed; @Cunninghametal2017]. One strand of this literature emphasizes the role of political opportunities in shaping these choices (). Campaign leaders evaluate the political environment and assess the likely consequences of alternative tactics, including the prospects for mobilization, repression, elite defections, and policy concessions. The underlying assumption is that dissident organizations are more likely to adopt the tactic they expect to offer the greatest probability of achieving their political objectives. The following paragraphs summarize key political opportunities that shape the relative attractiveness of nonviolent and violent resistance.
 
-A nonviolent campaign is a large-scale collective effort that uses nonviolent methods to achieve major political goal. Such goals may include overthrowing an incumbent government or achieving territorial secession. Common tactics include strikes, boycotts, and sit-ins.
+A nonviolent campaign is a large-scale collective effort that uses nonviolent methods to achieve major political goal. Such goals may include overthrowing an incumbent government or achieving territorial secession. Common tactics include strikes, boycotts, and sit-ins. Nonviolent campaigns rely on broad participation and cooperation from large segments of society. Their effectiveness therefore depends on their ability to mobilize supporters, disrupt normal political activity and weaken the regime's sources of support.
 
-Nonviolent campaigns rely on broad participation and cooperation from large segments of society. Their effectiveness therefore depends on their ability to mobilize supporters, disrupt normal political activity and weaken the regime's sources of support.
+As nonviolent resistance depends on mass participation, repression can substantially reduce its effectiveness. Arrests, violence, and intimidation increase the costs of participation and may discourage potential supporters from joining collective action (). Repression can also disrupt organizational networks by targeting leaders and activists who coordinate protest activities (). [Paper] showed that a key mechanism through which nonviolent campaigns succeed is by inducing defections among regime supporters. When political elites, bureaucrats, or members of the security forces withdraw their support from the incumbent government, the regime's capacity to govern and repress dissent is weakened ().
 
-As nonviolent resistance depends on mass participation, repression can substantially reduce its effectiveness. Arrests, violence, and intimidation increase the costs of participation and may discourage potential supporters from joining collective action (). Repression can also disrupt organizational networks by targeting leaders and activists who coordinate protest activities ().
+In addition to limiting repression, regimes may choose to negotiate or make concessions in response to nonviolent mobilization. When dissidents expect that peaceful collective action can generate meaningful concessions, the expected benefits of nonviolent tactics increase relative to violent alternatives. Nonviolent resistance is therefore most attractive when dissidents expect high levels of participation, a substantial likelihood of elite or security-force defections, limited repression, and a reasonable prospect of political concessions.
 
-[Paper] showed that a key mechanism through which nonviolent campaigns succeed is by inducing defections among regime supporters. When political elites, bureaucrats, or members of the security forces withdraw their support from the incumbent government, the regime's capacity to govern and repress dissent is weakened ().
+Violent campaigns involve the use of armed force or coercive violence to achieve large political objectives. Unlike nonviolent campaigns, violent resistance does not depend on broad participation in the same way and can be sustained by smaller, more centralized organizations. Because violent campaigns do not rely on mass mobilization, they may become relatively more attractive when conditions make large-scale participation in nonviolent resistance difficult. In particular, severe repression can raise the costs of open collective action, reducing the feasibility of sustained nonviolent mobilization.
 
-In addition to limiting repression, regimes may choose to negotiate or make concessions in response to nonviolent mobilization. When dissidents expect that peaceful collective action can generate meaningful concessions, the expected benefits of nonviolent tactics increase relative to violent alternatives.
-
-Nonviolent resistance is therefore most attractive when dissidents expect high levels of participation, a substantial likelihood of elite or security-force defections, limited repression, and a reasonable prospect of political concessions.
-
-
-Violent campaigns involve the use of armed force or coercive violence to achieve large political objectives. Unlike nonviolent campaigns, violent resistance does not depend on broad participation in the same way and can be sustained by smaller, more centralized organizations.
-
-Because violent campaigns do not rely on mass mobilization, they may become relatively more attractive when conditions make large-scale participation in nonviolent resistance difficult. In particular, severe repression can raise the costs of open collective action, reducing the feasibility of sustained nonviolent mobilization.
-
-Violent resistance may also be more likely when opportunities for elite or security-force defection are limited. When regimes maintain cohesive ruling coalitions and reliable coercive institutions, nonviolent campaigns are less able to generate the defections that often undermine incumbent governments.
-
-Consequently, political environments characterized by strong elite cohesion, effective repression, and low prospects for defection tend to increase the relative attractiveness of violent forms of resistance.
-
+Violent resistance may also be more likely when opportunities for elite or security-force defection are limited. When regimes maintain cohesive ruling coalitions and reliable coercive institutions, nonviolent campaigns are less able to generate the defections that often undermine incumbent governments. Consequently, political environments characterized by strong elite cohesion, effective repression, and low prospects for defection tend to increase the relative attractiveness of violent forms of resistance.
 
 \section{Ethnic Composition and Campaign Tactic}
 
 Political opportunities play a central role in shaping whether dissident campaigns adopt violent or nonviolent strategies. Campaigns evaluate their prospects of success based on expectations about elite defections, repression, and political concessions, and choose the tactic that appears most likely to achieve their objectives.
 
-This study argues that variation in these political opportunities is structured by the ethnic composition of ruling elites. Ethnic fragmentation shapes elite cohesion and thereby influences the likelihood of defection, the effectiveness of repression, and the probability of concessions.
+This study argues that variation in these political opportunities is structured by the ethnic composition of ruling elites. Ethnic fragmentation shapes elite cohesion and thereby influences the likelihood of defection, the effectiveness of repression, and the probability of concessions. Ethnically heterogeneous ruling coalitions are more vulnerable to elite defection because political loyalty is often embedded in ethnic networks that provide alternative bases of support outside the regime. This increases the likelihood that elites withdraw support under conditions of sustained mobilization.
 
-Ethnically heterogeneous ruling coalitions are more vulnerable to elite defection because political loyalty is often embedded in ethnic networks that provide alternative bases of support outside the regime. This increases the likelihood that elites withdraw support under conditions of sustained mobilization.
+Ethnic divisions can also weaken coercive capacity by generating coordination problems within security forces and governing institutions, reducing the state’s ability to carry out sustained repression. In addition, fragmented ruling coalitions may be more likely to pursue negotiated settlements, as internal divisions increase the risks associated with prolonged conflict and make concessions a more attractive option for regime survival.
 
-Ethnic divisions can also weaken coercive capacity by generating coordination problems within security forces and governing institutions, reducing the state’s ability to carry out sustained repression.
-
-In addition, fragmented ruling coalitions may be more likely to pursue negotiated settlements, as internal divisions increase the risks associated with prolonged conflict and make concessions a more attractive option for regime survival.
-
-Taken together, ethnic fragmentation increases the likelihood of elite defections, weakens repression, and increases the probability of concessions. These conditions make nonviolent resistance more effective relative to violent forms of contention.
-
-Accordingly, we expect that dissident campaigns facing more ethnically fragmented ruling coalitions will be more likely to adopt nonviolent tactics.
-
+Taken together, ethnic fragmentation increases the likelihood of elite defections, weakens repression, and increases the probability of concessions. These conditions make nonviolent resistance more effective relative to violent forms of contention. Accordingly, we expect that dissident campaigns facing more ethnically fragmented ruling coalitions will be more likely to adopt nonviolent tactics.
 
 \begin{hyp}
 Greater ethnic fragmentation in ruling elites increases the likelihood that dissident campaigns adopt nonviolent tactics rather than violent tactics.
@@ -147,33 +126,29 @@ Greater equality in the distribution of power among ethnic groups in the ruling 
 
 \section{Data and Methods}
 \subsection{Data description}
-We test our hypotheses using the NAVCO 2.1 dataset, which documents maximalist anti-government campaigns from 1945 to 2013 [@chenoweth2011civil]. The unit of analysis is the campaign onset, as our theory concerns the initial choice between violent and nonviolent resistance. Following NAVCO coding protocols, campaigns are categorized by their main tactic into two mutually exclusive groups: violent and nonviolent. We operationalize this distinction as a binary variable (1 = violent, 0 = nonviolent). Our final sample includes X violent and Y nonviolent campaign onsets.
+Our study employs a panel dataset of `r nrow(df)` so-called "maximalist campaigns", a concept first introduced by Chenoweth and Stephan in *Why Civil Resistance Works* book [@chenoweth2011civil]. Following their definition, a campaign is "a series of observable, continuous, purposive mass tactics or events in pursuit of a political objective’, with maximalist objectives encompassing regime change, self-determination, secession, and the expulsion of foreign occupations [@DVN/MHOXDV_2019]. We rely on Nonviolent and Violent Campaigns and Outcomes (NAVCO) 2.1 dataset, which records 384 maximalist campaigns from 1945 to 2013^[The most significant reason why the number of campaigns we have in the panel dataset differs from the total number of maximalist campaigns concerns country coding. We construct a panel dataset of indepedent country-years based on Correlates of War (CoW) list of independent states. We merge our panel data using NAVCO-assigned CoW country codes. However, in some cases, countries of a campaign location are not independent at the campaign onset year and thus lost from the data we use in the analysis. For example, there is a campaign geographically located in Algeria in 1952, though Algeria gained independence only in 1962. A naive solution would be assigning socio-economic characteristics of the "target" country - France in case of Algeria, though it would severely bias the results as if the campaign took place in France. We partly address this issue by excluding territorial campaigns in the robustness check section. Table \@ref(tab:lost-campaigns-appendix) in Appendix C lists all these lost campaigns.].
 
+The central conceptual distinction is between violent and nonviolent repertoires of contention. Following NAVCO coding rules, nonviolent tactics ‘do not directly threaten or harm the physical wellbeing of the regime, its agents, or its citizens’ and the violent repertoire ‘involves the use of force to physically harm or threaten to harm the opponents’ [@DVN/MHOXDV_2019]. The categories are mutually exclusive. A prominent example of a nonviolent campaign is the German 1989 *Die Wende* and the Cuban Revolution exemplifies a violent campaign. The violence/nonviolence distinction is well-established in the peace science literature and some significant findings have been made using NAVCO dataset [@celestino2013fresh; @manekin2022effective; @cunningham2013understanding]. Violence is operationally coded as a binary variable (1 = a campaign takes a violent form, 0 = a campaign takes a nonviolent form).
 
-Our key independent variables come from the Ethnic Power Relations (EPR) Core Dataset [@vogt2015integrating], which records politically relevant ethnic groups and their access to state power.
+Our key independent variables are drawn from the Ethnic Power Relations (EPR) Core Dataset [@vogt2015integrating]. EPR provides information on ethnic groups and their relative access to power. Following Hendrix and Salehyan [-@hendrix2019ethnicity], we operationalize the ethnic ruling elite fragmentation via the *Included fractionalization index (IFI)* and the *Excluded fractionalization index (EFI)*. IFI is "a Herfindahl-like index of all groups counted as ‘included’ (i.e. having access to executive power) during a given country-year", whilst EFI is "a Herfindahl-like index of all groups counted as ‘excluded’ during a given country-year". Thus, a higher IFI indicates a more concentrated ethnic ruling elite and a lower IFI shows that ethnic power is distributed more equally, across many groups. Instead of relying on raw counts, IFI and EFI are more theoretically motivated. If a raw count treats two countries with the ethnic groups in power count of, say, 3 equally, IFI and EFI account for ethnic power distributions.
 
-For Hypothesis 1, we follow Hendrix and Salehyan [-@hendrix2019ethnicity] and measure ethnic elite fragmentation using the Included Fractionalization Index (IFI):
+The Included Fractionalization Index (IFI) is calculated the following way:
 $$
 IFI = 1 - \sum_{i=1}^{N} s_i^2
 $$
-where (s_i) is the population share of included ethnic group (i). IFI captures the fragmentation of the ruling coalition. Unlike a simple count of included groups, it also accounts for their relative size. Higher values indicate more fragmented ruling coalitions, while lower values indicate that executive power is concentrated among fewer ethnic groups. 
+where $s_i$ is the population share of included ethnic group (i)^[EFI follows an analogous construction, where $s_i$ would be the population share of excluded ethnic groups]. Higher values indicate more fragmented ruling coalitions, while lower values indicate that executive power is concentrated among fewer ethnic groups. 
 
+For Hypothesis 2, we use a binary indicator derived from the highest EPR access-to-power category to distinguish between concentrated and shared executive power [@vogt2015integrating; @hlatky2025ethnic]. For each campaign, the variable is coded as 1 if the highest status held by any politically relevant ethnic group is Senior Partner, indicating a meaningful power-sharing arrangement where executive authority is shared among multiple groups. It is coded as 0 if the highest status is Monopoly (exclusive control by a single group) or Dominant (one group controls the executive while others hold subordinate positions).
 
-For Hypothesis 2, we use a binary indicator derived from the highest EPR access-to-power category to distinguish between concentrated and shared executive power ([@Vogtetal2015]; [@HlatkyLandry2025]). For each campaign, the variable is coded as 1 if the highest status held by any politically relevant ethnic group is Senior Partner, indicating a meaningful power-sharing arrangement where executive authority is shared among multiple groups. It is coded as 0 if the highest status is Monopoly (exclusive control by a single group) or Dominant (one group controls the executive while others hold subordinate positions).
+To address endogeneity and block non-causal paths, we control for a standard set of confounders: GDP per capita in constant PPP dollars [@gapminderGDPCapitaConstant2024]; logged population size [@unitednationsWorldPopulationProspects2024]; executive corruption scores and polyarchy (electoral democracy) scores [@coppedgeVDemCodebookV142024]; regime duration in years [@coppedgeVDemCodebookV142024]; peace years (years elapsed since the last maximalist campaign in each country). Our theory focuses on pre-onset strategic decisions about campaign tactics. We therefore use one-year lagged values of all independent variables to capture the political environment in which these decisions are made.^[Even though we find it unconvincing that a choice of one tactic over the other could affect IFI and EFI].
 
+We also include the Excluded Fractionalization Index (EFI), constructed analogously to IFI but using the population shares of excluded ethnic groups rather than included groups. This controls for ethnic heterogeneity among excluded populations, ensuring that effects attributed to ruling coalition fragmentation are not confounded by broader ethnic structure. Finally, we control for whether a campaign is initiated by an included ethnic group to ensure that results are not driven by systematic differences between campaigns initiated by included versus excluded groups.
 
-To reduce confounding, we control for standard economic, demographic, and political factors that may be correlated with both ethnic elite structures and campaign tactics. Economic controls include GDP per capita, GDP growth, and logged population size. Demographic controls include youth bulge, measured as the share of the population aged 15–29. Political controls include executive corruption, electoral democracy (polyarchy), regime duration, and peace years since the last maximalist campaign.
+Table \@ref(tab:descriptive-stats) presents descriptive statistics for all variables, separately for violent and nonviolent campaigns. The table shows a slight balance between violence and nonviolence instances. In the raw means, violent campaigns exhibit slightly higher levels of ethnic elite fragmentation (IFI) and more inclusive ethnic power-sharing arrangements within the executive compared to nonviolent campaigns. 
 
-We also include excluded ethnic fractionalization (EFI), constructed analogously to IFI but using the population shares of excluded ethnic groups rather than included groups [@hendrix2019ethnicity]. This controls for ethnic heterogeneity among excluded populations, ensuring that effects attributed to ruling coalition fragmentation are not confounded by broader ethnic structure. Finally, we control for whether a campaign is initiated by an included ethnic group to ensure that results are not driven by systematic differences between campaigns initiated by included versus excluded groups.
+Missing data is limited and does not pose a systematic concern for the analysis. In total, only `r round(sum(is.na(df$epr_IFI_l)) / nrow(df) * 100, 2)`% of IFI values and `r round(sum(is.na(df$epr_highest_rank)) / nrow(df) * 100, 2)`% of EPR highest access-to-power observations are missing^[Though there is missing data on ethnic groups for all campaigns in countries where data collection is complicated and ethnic lines are profound, such as Yemen and Somalia]. Figure \@ref(fig:epr-ifi) shows the distribution of the included fractionalization index with respect to the tactic choice, visualized by both a histogram and a density plot. At low IFI values, nonviolent tactics are more frequent and with the growing IFI the violent tactic is prevalent. Moreover, with the growing IFI both tactic choices occur more frequently, reflecting the mass anti-regime mobilization logic - with the growing elite fragmentation, political opportunities of rebellion are increasing, regardless of the repertoire of contention. This visualization shows some degree of variation of 1) the Included Fractionaliztion Index 2) between violent and nonviolent choice.
 
-
-Our theory focuses on pre-onset strategic decisions about campaign tactics. We therefore use lagged values of all independent variables from the previous year to capture the political environment in which these decisions are made.
-
-Table @ref(tab:descriptive-stats) presents descriptive statistics for all variables, separately for violent and nonviolent campaigns. In the raw means, violent campaigns exhibit slightly higher levels of ethnic elite fragmentation (IFI) and more inclusive ethnic power-sharing arrangements within the executive compared to nonviolent campaigns. 
-
-Missing data is limited and does not pose a systematic concern for the analysis. In total, only r round(sum(is.na(df_final_methods$epr_IFI_l)) / nrow(df_final_methods) * 100, 2)% of IFI values and r round(sum(is.na(df_final_methods$epr_highest_rank)) / nrow(df_final_methods) * 100, 2)% of EPR highest access-to-power observations are missing.
-
-```{r descriptive-statistics,  results='asis'}
+```{r descriptive-statistics, results='asis'}
 ## Create dataframe with categorized tactics and selected variables
 summarydata <- df %>%
   mutate(
@@ -244,13 +219,53 @@ datasummary_balance(
   ) 
 ```
 
+```{r epr-ifi, fig.cap="Included fractionalization index by Repertoire Choice: a histogram and a density plot", fig.align = 'center', out.width="85%", include = TRUE}
+# Histogram
+p_hist <- df %>%
+  ggplot(aes(x = epr_IFI_l, fill = onset_type)) +
+  geom_histogram(binwidth = 0.1, position = "dodge",
+                 color = "white", linewidth = 0.3) +
+  scale_fill_manual(values = c("Nonviolent" = "#2C86C7",
+                               "Violent"    = "#C0392B")) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+  labs(x = "IFI (0 = fully concentrated, 1 = fully fragmented)",
+       y = "Count",
+       fill = NULL) +
+  theme_bw() +
+  theme(legend.position  = "none",
+        panel.grid.minor = element_blank())
 
+# Density plot
+p_dens <- df %>%
+  ggplot(aes(x = epr_IFI_l, fill = onset_type, color = onset_type)) +
+  geom_density(alpha = 0.25, linewidth = 0.8, bw = 0.06) +
+  scale_fill_manual(values  = c("Nonviolent" = "#2C86C7",
+                                "Violent"    = "#C0392B"), guide   = "none") +
+  scale_color_manual(values = c("Nonviolent" = "#2C86C7",
+                                "Violent"    = "#C0392B"), guide   = "none") +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.2)) +
+  labs(x     = "IFI (0 = fully concentrated, 1 = fully fragmented)",
+       y     = "Density",
+       fill  = NULL,
+       color = NULL) +
+  theme_bw() +
+  theme(legend.position  = "bottom",
+        panel.grid.minor = element_blank())
 
+# Combine with patchwork
+(p_hist + p_dens) + 
+  plot_layout(axis_titles = "collect", guides = 'collect') &
+  theme(
+    legend.position        = "bottom",
+    legend.justification   = "center",
+    legend.box.just        = "center",
+    panel.grid.minor       = element_blank()
+  )
+```
 
-
-\subsection*{Modeling approach}
+\subsection{Modeling approach}
 ```{r variation-IV, include=FALSE}
-### Test variation of the independent variables ###-----------------------------
+# Test variation of the independent variables #
 ## Create function for measuring variation
 # Define a function to calculate within-group, between-group, and total variation
 # Returns the Intraclass Correlation Coefficient (ICC) to assess clustering strength
@@ -309,53 +324,44 @@ variance_results_country <- map_dfr(
 ## Clean environment
 rm(list = c("summarydata", "variance_results_country", "variance_decomp", "vars"))
 ```
-We estimate multilevel logistic regression models because the dependent variable indicates whether a campaign onset is violent or nonviolent. Since multiple campaign onsets can occur within the same country, observations are clustered. We therefore include country-specific random intercepts to account for differences across countries in their baseline likelihood of violent campaign onset.
 
-Our hypotheses focus on both changes in ethnic power structures within countries and differences in ethnic power structures across countries. We therefore retain both within-country and cross-national variation in the analysis.
+Because the dependent variable captures whether a campaign onset is violent or nonviolent, we estimate logistic regression models. The focus of the analysis is on the choice of tactic at campaign onset, rather than the timing or duration of campaigns; a binary logit specification is therefore appropriate. As we do not predict the duration of events, there is no need for advanced binary choice models such as a complementary log-log.
 
-This is important because ethnic power structures tend to change slowly over time. ICC estimates show that much of the variation in the key independent variables occurs between countries rather than within countries. A fixed-effects model would therefore rely on a relatively small number of countries that experience changes in ethnic inclusion, while removing the cross-national variation that is central to our argument. A random-intercepts model allows us to use both sources of variation.
+To account for the panel structure of the data - where multiple campaign onsets may occur within the same country - we include country-level varying intercepts. This allows baseline differences in the propensity toward violent versus nonviolent campaign onset to vary across countries.
 
-Random-effects models assume that unobserved country characteristics are uncorrelated with the included covariates. To assess the sensitivity of our results to this assumption, we estimate a correlated random-effects (Mundlak) model as a robustness check.
+Including a country fixed effect to control for the time-invariant unobserved factors such as culture or geography is theoretically appealing and common in the peace science literature [@butcher2016manufacturing; @ives2022greed; @fearon2003ethnicity; @jung2025motivating]. Ethnic configurations change slowly over time, and exploratory analysis indicates limited within-country variation in both IFI and EFI. As a result, a fixed-effects specification would rely primarily on the relatively small subset of countries that experience meaningful changes in ethnic inclusion structures across campaign onsets. Given that our theoretical argument concerns how both cross-national differences and temporal variation in elite ethnic structures shape strategic choices, we retain both sources of variation. A random-intercepts specification is therefore more consistent with the structure of the data and the substantive scope of the hypotheses.
 
+We acknowledge, however, that random-effects models rely on a stronger assumption than fixed effects—namely that country-specific unobserved heterogeneity is uncorrelated with the included regressors. If this assumption is violated, coefficient estimates may be biased [@clark2015should]. Despite this limitation, the random-intercepts approach represents an appropriate trade-off between bias and efficiency in this setting, given the limited within-country variation in key predictors. To assess the sensitivity of our results to this assumption, we estimate a correlated random-effects (Mundlak) model as a robustness check.
 
+For Hypothesis 1, our model specification is:
+$$
+\begin{aligned}
+& \text{violent}_{it} \sim \text{Bernoulli}(\pi_{it}) \\[0.3em]
+& \log\left(\frac{\pi_{it}}{1-\pi_{it}}\right) = \beta_0 
++ \beta_1 (\text{IFI})_{it-1} 
++ \beta_2 (\text{EFI})_{it-1} 
++ \mathbf{X}'_{it-1}\boldsymbol{\gamma} + \alpha_{[j]i} \\[0.3em]
+& \alpha_j \sim \mathcal{N}(\mu_\alpha, \sigma^2_\alpha)
+\end{aligned}
+$$
+where $\mathbf{X}_{it-1}$ denotes the vector of lagged control variables and $u_i$ is a country-specific random intercept capturing unobserved time-invariant heterogeneity.
+
+For Hypothesis 2, our model specification is:
+$$
+\begin{aligned}
+& \text{violent}_{it} \sim \text{Bernoulli}(\pi_{it}) \\[0.3em]
+& \log\left(\frac{\pi_{it}}{1-\pi_{it}}\right) = \beta_0 
++ \beta_1 (\text{Senior Partner})_{it-1} 
++ \beta_2 (\text{EFI})_{it-1} 
++ \mathbf{X}'_{it-1}\boldsymbol{\gamma} + \alpha_{[j]i} \\[0.3em]
+& \alpha_j \sim \mathcal{N}(\mu_\alpha, \sigma^2_\alpha)
+\end{aligned}
+$$
+where $\text{Senior Partner}$ is a binary indicator of whether the highest status held by any politically relevant ethnic group is Senior Partner, $\mathbf{X}_{it-1}$ denotes the vector of lagged control variables and $u_i$ is a country-specific random intercept capturing unobserved time-invariant heterogeneity.
 
 \section{Results}
-
-\subsection{Assumption Diagnostics}
-
-A series of diagnostic tests were conducted for the models of both hypotheses. Variance inflation factors indicated no evidence of multicollinearity among the explanatory variables. The assumption of linearity on the logit scale was assessed by comparing the baseline specifications to models including natural spline terms for the main explanatory variables. As the spline specifications did not improve model fit, the linear specifications were retained. Furthermore, DHARMa residual diagnostics, including quantile and QQ-plot assessments, revealed no substantial deviations from model expectations and provided no evidence of serious misspecification. Influence diagnostics based on Cook's distance indicated that the results were not driven by a small number of influential observations. Detailed diagnostic results are reported in Appendix B (Tables B.1–B.3).
-
-\subsection{Model Fit}
-
-Model fit was evaluated using out-of-sample prediction. A train-test split was employed to calculate classification accuracy, precision, recall, F1 scores, and the area under the receiver operating characteristic curve (AUC). The resulting ROC curve and AUC indicated satisfactory discriminatory performance, suggesting that the model is capable of distinguishing between violent and nonviolent campaigns beyond the estimation sample.
-
-
-
-\subsection{Robustness Checks}
-
-Several robustness checks were conducted to assess the stability of the findings. First, the models were re-estimated after excluding influential observations. Second, the analyses were replicated on a regional subsample consisting of campaigns in the Middle East, North Africa, and Sub-Saharan Africa. Third, random-effects within-between (REWB) models were estimated to relax the standard random-effects exogeneity assumption. Finally, simulation-based cross-validation was employed to assess the stability of coefficient estimates across repeated subsamples. Across these alternative specifications and samples, the substantive conclusions remained unchanged, providing additional confidence in the robustness of the findings.
-
-\section{Conclusion}
-
-Why do some dissident movements choose violence while others pursue nonviolent resistance? This paper examined whether part of the answer lies in the ethnic composition of ruling elites. Building on political opportunity theories, we argued that ethnic fragmentation and a more equal distribution of power among ruling ethnic groups could weaken elite cohesion, increase the likelihood of defections, reduce the effectiveness of repression, and make concessions more likely. These conditions were expected to increase the attractiveness of nonviolent resistance relative to violent tactics.
-
-Using data on maximalist campaigns from the NAVCO 2.1 project and measures of ethnic power relations from the EPR dataset, we tested whether ethnic elite composition influences campaign tactic choice. The empirical results provide little support for this argument. Neither ethnic fragmentation among ruling elites nor the distribution of power across ruling ethnic groups consistently predicts whether dissidents adopt violent or nonviolent tactics. Moreover, these null findings remain robust across alternative model specifications and subsamples.
-
-These findings are relevant because they challenge a plausible extension of political opportunity theory. Existing research suggests that elite defections, repression, and concessions are important determinants of campaign success and strategic choice. If ethnic fragmentation affects these mechanisms, one might expect it to shape campaign tactics as well. The results presented here suggest that this connection is weaker than anticipated. While ethnic divisions within ruling coalitions may influence regime stability, conflict dynamics, or campaign outcomes, they do not appear to systematically affect the initial choice between violent and nonviolent resistance.
-
-
-
-```{=latex}
-\clearpage
-\newpage
-\appendix
-\renewcommand{\thetable}{A\arabic{table}}
-\setcounter{table}{0}
-```
-
-\section{Appendix A}
-```{r H1-analysis, include=FALSE}
-### H1: Analysis ###------------------------------------------------------------
+\subsection{Hypothesis 1}
+```{r H1-analysis, fig.cap="Simulated predicted probabilities of a violent tactic choice over a range of included fractionalization index values", fig.align = 'center', out.width="85%", include = TRUE}
 ## Define a formula for H1
 formula_h1 <- NVC2.1_VIOL ~ epr_IFI_l + epr_EFI_l + egip_participated_l +
   log_gdp_pcap_l + pop_log_l + v2x_polyarchy_l + v2x_execorr_l +
@@ -393,7 +399,7 @@ ggplot(ova_egip_full_m1,
        y     = "Predicted Probability \n Violent Campaign", 
        caption = paste0(
          simulation_number, " simulations, 95% CI\n",
-         "Note: The dashed line represents the empirical probability of a violent event in the estimation sample (i.e., the mean of the binary outcome)."
+         "Note: The dashed line represents the empirical probability of a violent event in the sample"
        )) +
   theme_bw() +
   theme(
@@ -402,8 +408,114 @@ ggplot(ova_egip_full_m1,
     plot.caption     = element_text(hjust = 1, color = "grey50")
   )
 ```
-```{r H2-analysis, include=FALSE}
-### H2: Analysis ###------------------------------------------------------------
+To test the first hypothesis, we estimate a logit model of the violent tactic choice, according to the H1 model specification^[Regression coefficients are available in Table \@ref(tab:base-model-table) in Appendix C]. Figure \@ref(fig:H1-analysis) shows the simulated predicted probabilities of a violent tactic choice over a full available range of observed IFI values. Despite a upward trend - from `r round(ova_egip_full_m1$mean[1], 2)` at IFI equal to `r round(ova_egip_full_m1$focal_value[1], 2)` to `r round(ova_egip_full_m1$mean[50], 2)` at IFI equal to `r round(ova_egip_full_m1$focal_value[50], 2)` - confidence intervals that encompass `r round(sum(df$NVC2.1_VIOL) / nrow(df), 2)`, which is the empirical probability of a violent campaign, do not allow us to claim that with the increasing IFI the rebels would prefer violence over nonviolence.
+
+```{r H1-confusion-matrix}
+### Create confusion matrix ###
+## Set same seed as simulations for reproducibility
+set.seed(1234)
+
+## Define the number of observations
+n_total <- nrow(df)
+
+## Randomly select 2/3 of observations for training
+train_idx <- sample(1:n_total, size = floor(2/3 * n_total), replace = FALSE)
+
+## Select remaining 1/3 used as test set
+test_idx  <- setdiff(1:n_total, train_idx)
+
+## Construct training dataset
+df_train <- df[train_idx, ]
+
+## Estimate mixed-effects logistic regression on training data
+model1_train  <- glmer(formula_h1,        # random intercept by country
+                       data = df_train,
+                       family = binomial(link = "logit"),
+                       control = glmerControl(optimizer = "bobyqa",
+                                              optCtrl = list(maxfun = 2e5)))
+
+## Extract countries that are present in the training sample
+trained_cows <- rownames(ranef(model1_train)$cow)
+
+## Construct test dataset
+df_test <- df[test_idx, ] %>%
+  filter(as.character(cow) %in% trained_cows) %>%  # test is only with the trained countries
+  drop_na(epr_IFI_l, epr_EFI_l, egip_participated_l, log_gdp_pcap_l, 
+          pop_log_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, 
+          peace_years_l) # remove observations with missing values in model covariates
+
+## Predict probabilities of violence for test data
+pred_test_prob <- predict(model1_train, newdata = df_test, type = "response")
+
+## Define actual outcome labels
+actual_test <- ifelse(df_test$NVC2.1_VIOL == 1,
+                      "Violent", "Nonviolent")
+
+## Classify predictions using a 0.5 probability threshold
+pred_test   <- ifelse(pred_test_prob >= 0.5, "Violent", "Nonviolent")
+
+## Compute ROC curve and AUC
+roc_obj  <- roc(response  = ifelse(actual_test == "Violent", 1, 0),
+                predictor = pred_test_prob,
+                quiet     = TRUE)
+auc_val  <- as.numeric(auc(roc_obj))
+
+## Construct confusion matrix components
+tp <- sum(pred_test == "Violent"    & actual_test == "Violent")
+tn <- sum(pred_test == "Nonviolent" & actual_test == "Nonviolent")
+fp <- sum(pred_test == "Violent"    & actual_test == "Nonviolent")
+fn <- sum(pred_test == "Nonviolent" & actual_test == "Violent")
+
+## Calculate metrics
+accuracy  <- (tp + tn) / (tp + tn + fp + fn)
+precision <- tp / (tp + fp)
+recall    <- tp / (tp + fn)   
+f1        <- 2 * (precision * recall) / (precision + recall)
+
+## Create confusion matrix table
+conf_df <- data.frame(
+  ` `            = c("Predicted Nonviolent", "Predicted Violent"),
+  `Actual Nonviolent` = c(as.character(tn), as.character(fp)),
+  `Actual Violent`    = c(as.character(fn), as.character(tp)),
+  check.names = FALSE
+)
+
+## Create performance metrics table
+metrics_df <- data.frame(
+  ` `                 = c("Accuracy", "Precision", 
+                          "Recall",  "F1 Score", "AUC"),
+  `Actual Nonviolent` = c(sprintf("%.3f", accuracy), 
+                          sprintf("%.3f", precision),
+                          sprintf("%.3f", recall), 
+                          sprintf("%.3f", f1),
+                          sprintf("%.3f", auc_val)),
+  `Actual Violent`    = c("", "", "", "", ""),
+  check.names = FALSE
+)
+
+## Combine confusion matrix and metrics
+bind_rows(conf_df, metrics_df) %>%
+  kbl(
+    booktabs = TRUE,
+    align    = c("l", "c", "c"),
+    caption  = "Confusion Matrix and Predictive Performance — Model 1",
+    label    = "conf-matrix-h1",
+    escape   = FALSE
+  ) %>%
+  kable_styling(
+    latex_options = c("hold_position"),
+    full_width    = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE) %>%
+  row_spec(2, extra_css = "border-bottom: 2px solid black;") %>%  # separator line
+  pack_rows("Confusion Matrix", 1, 2) %>%
+  pack_rows("Performance Metrics", 3, 7)
+```
+
+Despite an insignificant effect of IFI on a violent choice, the model as a whole demonstrates a strong predictive performance. Model fit was evaluated using out-of-sample prediction. A train-test split mode reestimation was employed to calculate classification accuracy, precision, recall, F1 scores, and the area under the receiver operating characteristic curve (AUC). Table \@ref(tab:conf-matrix-h1) reports the confusion matrix and performance metrics. With an accuracy of `r round(accuracy, 2)` and F1 score of `r round(f1, 2)`, our model in general predicts tactic choice well above a coin toss, predicting violence a bit better than the nonviolent choice. Another measure of model fit is the area under the ROC curve (AUC), showing whether our model predictions of a violent choice are better than a random draw. The AUC score of `r round(auc_val, 2)` indicates a good model fit. Figure \@ref(fig:h1-auc-roc-appendix) in Appendix A plots an AUC-ROC curve for this model. An important implication here is that the model as a whole (including the specification itself, a set of covariates and a country varying intercept) captures meaningful variation in the outcome, even though the IFI does not significantly predict a violent choice. Such results reflect a real absence of the IFI effect rather than a model misspecification.
+
+\subsection{Hypothesis 2}
+```{r H2-analysis, fig.cap="Simulated first differences for a violent tactic choice between shared and concentrated ethnic executive power", fig.align = 'center', out.width="85%", include = TRUE}
 ## Define a formula for H2
 formula_h2 <- NVC2.1_VIOL ~ epr_highest_rank + epr_EFI_l + egip_participated_l +
   log_gdp_pcap_l + pop_log_l + v2x_polyarchy_l + v2x_execorr_l +
@@ -415,47 +527,277 @@ model2 <- glmer(formula_h2,
                 control = glmerControl(optimizer = "bobyqa",
                                        optCtrl = list(maxfun = 2e5))) # apply an optimizer for convergence
 
-## Simulate predicted probabilities (Observed value approach)
-ova_egip_full_m2  <- sim_ova_range(model2,        
-                                   focal_var = "epr_highest_rank", 
-                                   nsim = simulation_number,
-                                   vcov_matrix = vcov(model2))$result %>% mutate(type = "Full Sample")
-
-## Create plot for predicted probabilities 
-ggplot(ova_egip_full_m2,
-       aes(x = focal_value, y = mean)) +
-  geom_line(linewidth = 0.9, color = "#C0392B") +
-  geom_hline(yintercept = round(sum(df$NVC2.1_VIOL) / nrow(df), 2), # a benchmark probability dashed line
-             linetype = 'dashed', color = 'grey', alpha = 0.8) + 
-  geom_ribbon(aes(ymin = lower, ymax = upper), 
-              alpha = 0.15, fill = "#C0392B", color = NA) +
-  geom_rug(
-    data = df %>% drop_na(epr_highest_rank),
-    aes(x = epr_highest_rank),
-    inherit.aes = FALSE,
-    color = "#C0392B", alpha = 0.3,
-    sides = "b"          # bottom only
-  ) + 
-  labs(x     = "Executive Power Sharing", 
-       y     = "Predicted Probability \n Violent Campaign", 
-       caption = paste0(
-         simulation_number, " simulations, 95% CI\n",
-         "Note: The dashed line represents the empirical probability of a violent event in the estimation sample (i.e., the mean of the binary outcome)."
-       )) +
-  theme_bw() +
-  theme(
-    axis.title.y     = element_text(margin = margin(r = 10)),
-    panel.grid.minor = element_blank(),
-    plot.caption     = element_text(hjust = 1, color = "grey50")
-  )
-
 #WARNING: A convergence issue occured. Reestiamte a model with a warm start
 all_fits_m2 <- allFit(model2)
 ok_fits  <- all_fits_m2[summary(all_fits_m2)$which.OK]
 llik_vals <- sapply(ok_fits, logLik)
 model2  <- ok_fits[[which.max(llik_vals)]]
-model2@optinfo$conv$lme4 #model converged
+#model2@optinfo$conv$lme4 #model converged
+
+## First differences (Observed value approach)
+ova_fd_full_m2 <- sim_ova_fd(model2, focal_var = "epr_highest_rank", 
+                             val1 = 0, val2 = 1,
+                             nsim = simulation_number, vcov_matrix = vcov(model2))
+
+fd_df <- data.frame(fd = ova_fd_full_m2$sims)
+
+ggplot(fd_df, aes(x = fd)) +
+  geom_histogram(fill = "#C0392B", alpha = 0.3, color = "#C0392B",
+                 bins = 25) +
+  geom_vline(xintercept = ova_fd_full_m2$mean,
+             color = "#C0392B", linewidth = 0.9) +
+  geom_vline(xintercept = c(ova_fd_full_m2$lower, ova_fd_full_m2$upper),
+             color = "#C0392B", linewidth = 0.7, linetype = "dashed") +
+  geom_vline(xintercept = 0,
+             color = "grey40", linewidth = 0.6, linetype = "dotted") +
+  labs(x       = "First differences for a violent tactic choice \n between shared and concentrated ethnic executive power configurations",
+       y       = "Count",
+       caption = paste0(format(simulation_number, big.mark = ","),
+                        " simulations, 95% CI")) +
+  theme_bw() +
+  theme(panel.grid.minor = element_blank())
 ```
+
+To test the second hypothesis, we estimate a logit model of the violent tactic choice, according to the H2 model specification^[Initially, the model did not converge with the `bobyqa` optimizer. Following Bates et al. [-@bates2015lme4], we reestimate the model with all the available optimizers. Then, we pick the model with the highest log-likelihood vaue among the converged models. As a result of such reesimation, we use the converged model for simulating first differences. Regression coefficients are available in Table \@ref(tab:base-model-table) in Appendix C]. Given the binary independent variable, we calculated simulated first differences according to the observed value approach. Figure \@ref(fig:H2-analysis) shows the simulated first differences of a violent tactic choice between the shared ($\text{epr_highest_rank} == 1$) and concentrated ($\text{epr_highest_rank} == 0$) ethnic executive power configurations. The results clearly indicate that, despite a positive mean value of the first differences, there are no systematic and statistically significant differences between shared and concentrated ethnic executive power. It contrasts with theoretical expectations where ethnic power-sharing arrangements could push the dissidents towards one repertoire of contention over the other. 
+
+```{r H2-confusion-matrix}
+### Create confusion matrix ###
+## Set same seed as simulations for reproducibility
+set.seed(1234)
+
+## Define the number of observations
+n_total <- nrow(df)
+
+## Randomly select 2/3 of observations for training
+train_idx <- sample(1:n_total, size = floor(2/3 * n_total), replace = FALSE)
+
+## Select remaining 1/3 used as test set
+test_idx  <- setdiff(1:n_total, train_idx)
+
+## Construct training dataset
+df_train <- df[train_idx, ]
+
+## Estimate mixed-effects logistic regression on training data
+model2_train  <- glmer(formula_h2,        # random intercept by country
+                       data = df_train,
+                       family = binomial(link = "logit"),
+                       control = glmerControl(optimizer = "bobyqa",
+                                              optCtrl = list(maxfun = 2e5)))
+
+## Extract countries that are present in the training sample
+trained_cows <- rownames(ranef(model2_train)$cow)
+
+## Construct test dataset
+df_test <- df[test_idx, ] %>%
+  filter(as.character(cow) %in% trained_cows) %>%  # test is only with the trained countries
+  drop_na(epr_highest_rank, egip_participated_l, log_gdp_pcap_l, 
+          pop_log_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, 
+          peace_years_l) # remove observations with missing values in model covariates
+
+## Predict probabilities of violence for test data
+pred_test_prob <- predict(model2_train, newdata = df_test, type = "response")
+
+## Define actual outcome labels
+actual_test <- ifelse(df_test$NVC2.1_VIOL == 1,
+                      "Violent", "Nonviolent")
+
+## Classify predictions using a 0.5 probability threshold
+pred_test   <- ifelse(pred_test_prob >= 0.5, "Violent", "Nonviolent")
+
+## Compute ROC curve and AUC
+roc_obj  <- roc(response  = ifelse(actual_test == "Violent", 1, 0),
+                predictor = pred_test_prob,
+                quiet     = TRUE)
+auc_val  <- as.numeric(auc(roc_obj))
+
+## Construct confusion matrix components
+tp <- sum(pred_test == "Violent"    & actual_test == "Violent")
+tn <- sum(pred_test == "Nonviolent" & actual_test == "Nonviolent")
+fp <- sum(pred_test == "Violent"    & actual_test == "Nonviolent")
+fn <- sum(pred_test == "Nonviolent" & actual_test == "Violent")
+
+## Calculate metrics
+accuracy  <- (tp + tn) / (tp + tn + fp + fn)
+precision <- tp / (tp + fp)
+recall    <- tp / (tp + fn)   
+f1        <- 2 * (precision * recall) / (precision + recall)
+
+## Create confusion matrix table
+conf_df <- data.frame(
+  ` `            = c("Predicted Nonviolent", "Predicted Violent"),
+  `Actual Nonviolent` = c(as.character(tn), as.character(fp)),
+  `Actual Violent`    = c(as.character(fn), as.character(tp)),
+  check.names = FALSE
+)
+
+## Create performance metrics table
+metrics_df <- data.frame(
+  ` `                 = c("Accuracy", "Precision", 
+                          "Recall",  "F1 Score", "AUC"),
+  `Actual Nonviolent` = c(sprintf("%.3f", accuracy), 
+                          sprintf("%.3f", precision),
+                          sprintf("%.3f", recall), 
+                          sprintf("%.3f", f1),
+                          sprintf("%.3f", auc_val)),
+  `Actual Violent`    = c("", "", "", "", ""),
+  check.names = FALSE
+)
+
+## Combine confusion matrix and metrics
+bind_rows(conf_df, metrics_df) %>%
+  kbl(
+    booktabs = TRUE,
+    align    = c("l", "c", "c"),
+    caption  = "Confusion Matrix and Predictive Performance — Model 2",
+    label    = "conf-matrix-h2",
+    escape   = FALSE
+  ) %>%
+  kable_styling(
+    latex_options = c("hold_position"),
+    full_width    = FALSE
+  ) %>%
+  row_spec(0, bold = TRUE) %>%
+  row_spec(2, extra_css = "border-bottom: 2px solid black;") %>%  # separator line
+  pack_rows("Confusion Matrix", 1, 2) %>%
+  pack_rows("Performance Metrics", 3, 7)
+```
+
+As well as with the model 1, we test the model fit using out-of-sample prediction. Table \@ref(tab:conf-matrix-h2) reports the confusion matrix and performance metrics. All the metrics, especially F1 Score and AUC, indicate a good model fit as well. According to the confusion matrix, the model predicts violent tactic choice particularly successfully.Figure \@ref(fig:h2-auc-roc-appendix) in Appendix B plots an AUC-ROC curve for this model. In general, both models successfully capture meaningful variation in the outcome.
+
+
+\subsection{Assumption Diagnostics}
+
+A series of diagnostic tests were conducted for the models of both hypotheses. Variance inflation factors indicated no evidence of multicollinearity among the explanatory variables. The assumption of linearity on the logit scale was assessed by comparing the baseline specifications to models including natural spline terms for the main explanatory variables. As the spline specifications did not improve model fit, the linear specifications were retained. Furthermore, DHARMa residual diagnostics, including quantile and QQ-plot assessments, revealed no substantial deviations from model expectations and provided no evidence of serious misspecification. Influence diagnostics based on Cook's distance indicated that the results were not driven by a small number of influential observations. Detailed diagnostic results are reported in Appendix B (Tables B.1–B.3).
+
+
+\subsection{Robustness Checks}
+
+Several robustness checks were conducted to assess the stability of the findings. First, the models were re-estimated after excluding influential observations. Second, the analyses were replicated on a regional subsample consisting of campaigns in the Middle East, North Africa, and Sub-Saharan Africa. Third, random-effects within-between (REWB) models were estimated to relax the standard random-effects exogeneity assumption. Finally, simulation-based cross-validation was employed to assess the stability of coefficient estimates across repeated subsamples. Across these alternative specifications and samples, the substantive conclusions remained unchanged, providing additional confidence in the robustness of the findings.
+
+\section{Conclusion}
+
+Why do some dissident movements choose violence while others pursue nonviolent resistance? This paper examined whether part of the answer lies in the ethnic composition of ruling elites. Building on political opportunity theories, we argued that ethnic fragmentation and a more equal distribution of power among ruling ethnic groups could weaken elite cohesion, increase the likelihood of defections, reduce the effectiveness of repression, and make concessions more likely. These conditions were expected to increase the attractiveness of nonviolent resistance relative to violent tactics.
+
+Using data on maximalist campaigns from the NAVCO 2.1 project and measures of ethnic power relations from the EPR dataset, we tested whether ethnic elite composition influences campaign tactic choice. The empirical results provide little support for this argument. Neither ethnic fragmentation among ruling elites nor the distribution of power across ruling ethnic groups consistently predicts whether dissidents adopt violent or nonviolent tactics. Moreover, these null findings remain robust across alternative model specifications and subsamples.
+
+These findings are relevant because they challenge a plausible extension of political opportunity theory. Existing research suggests that elite defections, repression, and concessions are important determinants of campaign success and strategic choice. If ethnic fragmentation affects these mechanisms, one might expect it to shape campaign tactics as well. The results presented here suggest that this connection is weaker than anticipated. While ethnic divisions within ruling coalitions may influence regime stability, conflict dynamics, or campaign outcomes, they do not appear to systematically affect the initial choice between violent and nonviolent resistance.
+
+
+
+# References
+
+<div id="refs"></div>
+
+\newpage
+
+# Appendix {-}
+\appendix
+\renewcommand{\thesection}{\Alph{section}}
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{A\arabic{figure}}
+\setcounter{table}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+
+## Appendix A: AUC - ROC Curve - Model 1 {#appendix-a}
+
+```{r h1-auc-roc-appendix}
+### H1: AUC-ROC curve ###-------------------------------------------------------
+# Step 1: train-test split (same seed as confusion matrix section)
+set.seed(1234)
+
+pred_test <- predict(model1_train, newdata = df_test,
+                     type = "response",
+                     allow.new.levels = TRUE)
+
+valid_idx    <- !is.na(pred_test) & !is.na(df_test$NVC2.1_VIOL)
+actual_test  <- df_test$NVC2.1_VIOL[valid_idx]
+probs_test   <- pred_test[valid_idx]
+
+roc_obj <- roc(response  = actual_test,
+               predictor = probs_test,
+               smooth    = FALSE,      # kernel smoothing
+               quiet     = TRUE)
+
+roc_df <- data.frame(
+  FPR = 1 - roc_obj$specificities,
+  TPR = roc_obj$sensitivities
+)
+
+ggplot(roc_df, aes(x = FPR, y = TPR)) +
+  geom_ribbon(aes(ymin = 0, ymax = TPR),
+              fill = "#C0392B", alpha = 0.08) +
+  geom_line(color = "#C0392B", linewidth = 0.9) +
+  geom_abline(slope     = 1, intercept = 0,
+              linetype  = "dashed", color = "grey60",
+              linewidth = 0.5) +
+  annotate("text",
+           x     = 0.72, y = 0.25,
+           label = paste0("AUC = ", round(auc(roc_obj), 3)),
+           color = "#C0392B", size = 4) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  labs(
+    x       = "False positive rate (1 - Specificity)",
+    y       = "True positive rate (Sensitivity)"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.caption     = element_text(size = 8, color = "grey50", hjust = 1)
+  )
+```
+\newpage
+
+## Appendix B: AUC - ROC Curve - Model 2 {#appendix-b}
+
+```{r h2-auc-roc-curve}
+### H2: AUC-ROC curve ###-------------------------------------------------------
+set.seed(1234)
+
+pred_test <- predict(model2_train, newdata = df_test,
+                     type = "response",
+                     allow.new.levels = TRUE)
+
+valid_idx    <- !is.na(pred_test) & !is.na(df_test$NVC2.1_VIOL)
+actual_test  <- df_test$NVC2.1_VIOL[valid_idx]
+probs_test   <- pred_test[valid_idx]
+
+roc_obj <- roc(response  = actual_test,
+               predictor = probs_test,
+               smooth    = FALSE,      
+               quiet     = TRUE)
+
+roc_df <- data.frame(
+  FPR = 1 - roc_obj$specificities,
+  TPR = roc_obj$sensitivities
+)
+
+ggplot(roc_df, aes(x = FPR, y = TPR)) +
+  geom_ribbon(aes(ymin = 0, ymax = TPR),
+              fill = "#C0392B", alpha = 0.08) +
+  geom_line(color = "#C0392B", linewidth = 0.9) +
+  geom_abline(slope     = 1, intercept = 0,
+              linetype  = "dashed", color = "grey60",
+              linewidth = 0.5) +
+  annotate("text",
+           x     = 0.72, y = 0.25,
+           label = paste0("AUC = ", round(auc(roc_obj), 3)),
+           color = "#C0392B", size = 4) +
+  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
+  labs(
+    x       = "False positive rate (1 - Specificity)",
+    y       = "True positive rate (Sensitivity)"
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid.minor = element_blank(),
+    plot.caption     = element_text(size = 8, color = "grey50", hjust = 1)
+  )
+```
+\newpage
+
+## Appendix C: Model 1 and 2 regression coefficients {#appendix-c}
 
 ```{r base-model-table, results='asis'}
 coef_map <- c(
@@ -505,20 +847,10 @@ modelsummary(
   )
 ```
 
-```{=latex}
-\clearpage
 \newpage
-```
 
-```{=latex}
-\appendix
-\renewcommand{\thetable}{B\arabic{table}}
-\renewcommand{\thefigure}{B\arabic{figure}}
-\setcounter{table}{0}
-\setcounter{figure}{0}
-```
+## Appendix D: VIF values for multicollinearity diagnostics {#appendix-d}
 
-\section{Appendix B}
 ```{r check-multicollinearity, results='asis', warning=FALSE}
 ## Check for multicollinearity
 vif_m1 <- vif(model1)
@@ -606,6 +938,7 @@ vif_compare %>%
     threeparttable = TRUE
   )
 ```
+
 ```{r h1DHARMa-diagnostics, warning=FALSE}
 ## Create DHARMa residual simulations
 sim1 <- simulateResiduals(model1)
@@ -841,323 +1174,7 @@ modelsummary(
 
 ```
 
-
-```{=latex}
-\clearpage
 \newpage
-```
-
-```{r H1-confusion-matrix, warning=FALSE}
-### Create confusion matrix ###
-## Set same seed as simulations for reproducibility
-set.seed(1234)
-
-## Define the number of observations
-n_total <- nrow(df)
-
-## Randomly select 2/3 of observations for training
-train_idx <- sample(1:n_total, size = floor(2/3 * n_total), replace = FALSE)
-
-## Select remaining 1/3 used as test set
-test_idx  <- setdiff(1:n_total, train_idx)
-
-## Construct training dataset
-df_train <- df[train_idx, ]
-
-## Estimate mixed-effects logistic regression on training data
-model1_train  <- glmer(formula_h1,        # random intercept by country
-                       data = df_train,
-                       family = binomial(link = "logit"),
-                       control = glmerControl(optimizer = "bobyqa",
-                                              optCtrl = list(maxfun = 2e5)))
-
-## Extract countries that are present in the training sample
-trained_cows <- rownames(ranef(model1_train)$cow)
-
-## Construct test dataset
-df_test <- df[test_idx, ] %>%
-  filter(as.character(cow) %in% trained_cows) %>%  # test is only with the trained countries
-  drop_na(epr_IFI_l, epr_EFI_l, egip_participated_l, log_gdp_pcap_l, 
-          pop_log_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, 
-          peace_years_l) # remove observations with missing values in model covariates
-
-## Predict probabilities of violence for test data
-pred_test_prob <- predict(model1_train, newdata = df_test, type = "response")
-
-## Define actual outcome labels
-actual_test <- ifelse(df_test$NVC2.1_VIOL == 1,
-                      "Violent", "Nonviolent")
-
-## Classify predictions using a 0.5 probability threshold
-pred_test   <- ifelse(pred_test_prob >= 0.5, "Violent", "Nonviolent")
-
-## Compute ROC curve and AUC
-roc_obj  <- roc(response  = ifelse(actual_test == "Violent", 1, 0),
-                predictor = pred_test_prob,
-                quiet     = TRUE)
-auc_val  <- as.numeric(auc(roc_obj))
-
-## Construct confusion matrix components
-tp <- sum(pred_test == "Violent"    & actual_test == "Violent")
-tn <- sum(pred_test == "Nonviolent" & actual_test == "Nonviolent")
-fp <- sum(pred_test == "Violent"    & actual_test == "Nonviolent")
-fn <- sum(pred_test == "Nonviolent" & actual_test == "Violent")
-
-## Calculate metrics
-accuracy  <- (tp + tn) / (tp + tn + fp + fn)
-precision <- tp / (tp + fp)
-recall    <- tp / (tp + fn)   
-f1        <- 2 * (precision * recall) / (precision + recall)
-
-## Create confusion matrix table
-conf_df <- data.frame(
-  ` `            = c("Predicted Nonviolent", "Predicted Violent"),
-  `Actual Nonviolent` = c(as.character(tn), as.character(fp)),
-  `Actual Violent`    = c(as.character(fn), as.character(tp)),
-  check.names = FALSE
-)
-
-## Create performance metrics table
-metrics_df <- data.frame(
-  ` `                 = c("Accuracy", "Precision", 
-                          "Recall",  "F1 Score", "AUC"),
-  `Actual Nonviolent` = c(sprintf("%.3f", accuracy), 
-                          sprintf("%.3f", precision),
-                          sprintf("%.3f", recall), 
-                          sprintf("%.3f", f1),
-                          sprintf("%.3f", auc_val)),
-  `Actual Violent`    = c("", "", "", "", ""),
-  check.names = FALSE
-)
-
-## Combine confusion matrix and metrics
-bind_rows(conf_df, metrics_df) %>%
-  kbl(
-    booktabs = TRUE,
-    align    = c("l", "c", "c"),
-    caption  = "Confusion Matrix and Predictive Performance — Model 1",
-    label    = "conf-matrix-h1",
-    escape   = FALSE
-  ) %>%
-  kable_styling(
-    latex_options = c("hold_position"),
-    full_width    = FALSE
-  ) %>%
-  row_spec(0, bold = TRUE) %>%
-  row_spec(2, extra_css = "border-bottom: 2px solid black;") %>%  # separator line
-  pack_rows("Confusion Matrix", 1, 2) %>%
-  pack_rows("Performance Metrics", 3, 7)
-```
-
-```{r H2-confusion-matrix, warning=FALSE}
-### Create confusion matrix ###
-## Set same seed as simulations for reproducibility
-set.seed(1234)
-
-## Define the number of observations
-n_total <- nrow(df)
-
-## Randomly select 2/3 of observations for training
-train_idx <- sample(1:n_total, size = floor(2/3 * n_total), replace = FALSE)
-
-## Select remaining 1/3 used as test set
-test_idx  <- setdiff(1:n_total, train_idx)
-
-## Construct training dataset
-df_train <- df[train_idx, ]
-
-## Estimate mixed-effects logistic regression on training data
-model2_train  <- glmer(formula_h2,        # random intercept by country
-                       data = df_train,
-                       family = binomial(link = "logit"),
-                       control = glmerControl(optimizer = "bobyqa",
-                                              optCtrl = list(maxfun = 2e5)))
-
-## Extract countries that are present in the training sample
-trained_cows <- rownames(ranef(model2_train)$cow)
-
-## Construct test dataset
-df_test <- df[test_idx, ] %>%
-  filter(as.character(cow) %in% trained_cows) %>%  # test is only with the trained countries
-  drop_na(epr_highest_rank, egip_participated_l, log_gdp_pcap_l, 
-          pop_log_l, v2x_execorr_l, v2x_polyarchy_l, log_v2regdur_l, 
-          peace_years_l) # remove observations with missing values in model covariates
-
-## Predict probabilities of violence for test data
-pred_test_prob <- predict(model2_train, newdata = df_test, type = "response")
-
-## Define actual outcome labels
-actual_test <- ifelse(df_test$NVC2.1_VIOL == 1,
-                      "Violent", "Nonviolent")
-
-## Classify predictions using a 0.5 probability threshold
-pred_test   <- ifelse(pred_test_prob >= 0.5, "Violent", "Nonviolent")
-
-## Compute ROC curve and AUC
-roc_obj  <- roc(response  = ifelse(actual_test == "Violent", 1, 0),
-                predictor = pred_test_prob,
-                quiet     = TRUE)
-auc_val  <- as.numeric(auc(roc_obj))
-
-## Construct confusion matrix components
-tp <- sum(pred_test == "Violent"    & actual_test == "Violent")
-tn <- sum(pred_test == "Nonviolent" & actual_test == "Nonviolent")
-fp <- sum(pred_test == "Violent"    & actual_test == "Nonviolent")
-fn <- sum(pred_test == "Nonviolent" & actual_test == "Violent")
-
-## Calculate metrics
-accuracy  <- (tp + tn) / (tp + tn + fp + fn)
-precision <- tp / (tp + fp)
-recall    <- tp / (tp + fn)   
-f1        <- 2 * (precision * recall) / (precision + recall)
-
-## Create confusion matrix table
-conf_df <- data.frame(
-  ` `            = c("Predicted Nonviolent", "Predicted Violent"),
-  `Actual Nonviolent` = c(as.character(tn), as.character(fp)),
-  `Actual Violent`    = c(as.character(fn), as.character(tp)),
-  check.names = FALSE
-)
-
-## Create performance metrics table
-metrics_df <- data.frame(
-  ` `                 = c("Accuracy", "Precision", 
-                          "Recall",  "F1 Score", "AUC"),
-  `Actual Nonviolent` = c(sprintf("%.3f", accuracy), 
-                          sprintf("%.3f", precision),
-                          sprintf("%.3f", recall), 
-                          sprintf("%.3f", f1),
-                          sprintf("%.3f", auc_val)),
-  `Actual Violent`    = c("", "", "", "", ""),
-  check.names = FALSE
-)
-
-## Combine confusion matrix and metrics
-bind_rows(conf_df, metrics_df) %>%
-  kbl(
-    booktabs = TRUE,
-    align    = c("l", "c", "c"),
-    caption  = "Confusion Matrix and Predictive Performance — Model 1",
-    label    = "conf-matrix-h1",
-    escape   = FALSE
-  ) %>%
-  kable_styling(
-    latex_options = c("hold_position"),
-    full_width    = FALSE
-  ) %>%
-  row_spec(0, bold = TRUE) %>%
-  row_spec(2, extra_css = "border-bottom: 2px solid black;") %>%  # separator line
-  pack_rows("Confusion Matrix", 1, 2) %>%
-  pack_rows("Performance Metrics", 3, 7)
-```
-
-```{=latex}
-\clearpage
-\newpage
-```
-
-```{r H1-auc-roc-curve, warning=FALSE}
-### H1: AUC-ROC curve ###-------------------------------------------------------
-# Step 1: train-test split (same seed as confusion matrix section)
-set.seed(1234)
-
-pred_test <- predict(model1_train, newdata = df_test,
-                     type = "response",
-                     allow.new.levels = TRUE)
-
-valid_idx    <- !is.na(pred_test) & !is.na(df_test$NVC2.1_VIOL)
-actual_test  <- df_test$NVC2.1_VIOL[valid_idx]
-probs_test   <- pred_test[valid_idx]
-
-roc_obj <- roc(response  = actual_test,
-               predictor = probs_test,
-               smooth    = FALSE,      # kernel smoothing
-               quiet     = TRUE)
-
-roc_df <- data.frame(
-  FPR = 1 - roc_obj$specificities,
-  TPR = roc_obj$sensitivities
-)
-
-ggplot(roc_df, aes(x = FPR, y = TPR)) +
-  geom_ribbon(aes(ymin = 0, ymax = TPR),
-              fill = "#C0392B", alpha = 0.08) +
-  geom_line(color = "#C0392B", linewidth = 0.9) +
-  geom_abline(slope     = 1, intercept = 0,
-              linetype  = "dashed", color = "grey60",
-              linewidth = 0.5) +
-  annotate("text",
-           x     = 0.72, y = 0.25,
-           label = paste0("AUC = ", round(auc(roc_obj), 3)),
-           color = "#C0392B", size = 4) +
-  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
-  labs(
-    x       = "False positive rate (1 - Specificity)",
-    y       = "True positive rate (Sensitivity)",
-    title = "Figure B3. AUC-ROC curve (Model 1)"
-  ) +
-  theme_bw() +
-  theme(
-    panel.grid.minor = element_blank(),
-    text = element_text(family = "Times New Roman")
-  )
-
-```
-```{r H2-auc-roc-curve, warning=FALSE}
-### H2: AUC-ROC curve ###-------------------------------------------------------
-set.seed(1234)
-
-pred_test <- predict(model2_train, newdata = df_test,
-                     type = "response",
-                     allow.new.levels = TRUE)
-
-valid_idx    <- !is.na(pred_test) & !is.na(df_test$NVC2.1_VIOL)
-actual_test  <- df_test$NVC2.1_VIOL[valid_idx]
-probs_test   <- pred_test[valid_idx]
-
-roc_obj <- roc(response  = actual_test,
-               predictor = probs_test,
-               smooth    = FALSE,      
-               quiet     = TRUE)
-
-roc_df <- data.frame(
-  FPR = 1 - roc_obj$specificities,
-  TPR = roc_obj$sensitivities
-)
-
-ggplot(roc_df, aes(x = FPR, y = TPR)) +
-  geom_ribbon(aes(ymin = 0, ymax = TPR),
-              fill = "#C0392B", alpha = 0.08) +
-  geom_line(color = "#C0392B", linewidth = 0.9) +
-  geom_abline(slope     = 1, intercept = 0,
-              linetype  = "dashed", color = "grey60",
-              linewidth = 0.5) +
-  annotate("text",
-           x     = 0.72, y = 0.25,
-           label = paste0("AUC = ", round(auc(roc_obj), 3)),
-           color = "#C0392B", size = 4) +
-  scale_x_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
-  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, 0.25)) +
-  labs(
-    x       = "False positive rate (1 - Specificity)",
-    y       = "True positive rate (Sensitivity)",
-    title = "Figure B4. AUC-ROC curve (Model 2)"
-  ) +
-  theme_bw() +
-  theme(
-    panel.grid.minor = element_blank(),
-    plot.caption     = element_text(size = 8, color = "grey50", hjust = 1),
-    text = element_text(family = "Times New Roman")
-  )
-```
-
-
-```{=latex}
-\clearpage
-\newpage
-```
-
 
 ```{r subsample-models, include = FALSE, warning=FALSE}
 ### H1: Robustness Checks ###---------------------------------------------------
