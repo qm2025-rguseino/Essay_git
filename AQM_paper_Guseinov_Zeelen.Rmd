@@ -301,9 +301,22 @@ $$
 $$
 where $\mathbf{X}_{it-1}$ denotes the vector of lagged control variables and $u_i$ is a country-specific random intercept capturing unobserved time-invariant heterogeneity.
 
+For Hypothesis 2, our model specification is:
+$$
+\begin{aligned}
+& \text{violent}_{it} \sim \text{Bernoulli}(\pi_{it}) \\[0.3em]
+& \log\left(\frac{\pi_{it}}{1-\pi_{it}}\right) = \beta_0 
++ \beta_1 (\text{Senior Partner})_{it-1} 
++ \beta_2 (\text{EFI})_{it-1} 
++ \mathbf{X}'_{it-1}\boldsymbol{\gamma} + \alpha_{[j]i} \\[0.3em]
+& \alpha_j \sim \mathcal{N}(\mu_\alpha, \sigma^2_\alpha)
+\end{aligned}
+$$
+where $\text{Senior Partner}$ is a binary indicator of whether the highest status held by any politically relevant ethnic group is Senior Partner, $\mathbf{X}_{it-1}$ denotes the vector of lagged control variables and $u_i$ is a country-specific random intercept capturing unobserved time-invariant heterogeneity.
+
 \section{Results}
 \subsection{Hypothesis 1}
-```{r H1-analysis}
+```{r H1-analysis, fig.cap="Simulated predicted probabilities of a violent tactic choice over a range of included fractionalization index values", fig.align = 'center', out.width="85%", include = TRUE}
 ### H1: Analysis ###------------------------------------------------------------
 ## Define a formula for H1
 formula_h1 <- NVC2.1_VIOL ~ epr_IFI_l + epr_EFI_l + egip_participated_l +
@@ -458,8 +471,7 @@ bind_rows(conf_df, metrics_df) %>%
 Despite an insignificant effect of IFI on a violent choice, the model as a whole demonstrates a strong predictive performance. Model fit was evaluated using out-of-sample prediction. A train-test split mode reestimation was employed to calculate classification accuracy, precision, recall, F1 scores, and the area under the receiver operating characteristic curve (AUC). Table \@ref(tab:conf-matrix-h1) reports the confusion matrix and performance metrics. With an accuracy of `r round(accuracy, 2)` and F1 score of `r round(f1, 2)`, our model in general predicts tactic choice well above a coin toss, predicting violence a bit better than the nonviolent choice. Another measure of model fit is the area under the ROC curve (AUC), showing whether our model predictions of a violent choice are better than a random draw. The AUC score of `r round(auc_val, 2)` indicates a good model fit. Figure \@ref(fig:h1-auc-roc-appendix) in Appendix A plots an AUC-ROC curve for this model. An important implication here is that the model as a whole (including the specification itself, a set of covariates and a country varying intercept) captures meaningful variation in the outcome, even though the IFI does not significantly predict a violent choice. Such results reflect a real absence of the IFI effect rather than a model misspecification.
 
 \subsection{Hypothesis 2}
-
-```{r H2-analysis}
+```{r H2-analysis, fig.cap="Simulated first differences for a violent tactic choice between shared and concentrated ethnic executive power", fig.align = 'center', out.width="85%", include = TRUE}
 ### H2: Analysis ###------------------------------------------------------------
 ## Define a formula for H2
 formula_h2 <- NVC2.1_VIOL ~ epr_highest_rank + epr_EFI_l + egip_participated_l +
@@ -495,16 +507,14 @@ ggplot(fd_df, aes(x = fd)) +
              color = "#C0392B", linewidth = 0.7, linetype = "dashed") +
   geom_vline(xintercept = 0,
              color = "grey40", linewidth = 0.6, linetype = "dotted") +
-  labs(x       = "First Difference in Pr(Violent Onset)",
+  labs(x       = "First differences for a violent tactic choice \n between shared and concentrated ethnic executive power configurations",
        y       = "Count",
-       title   = "Effect of Highest Rank Group on Pr(Violent Campaign)",
        caption = paste0(format(simulation_number, big.mark = ","),
                         " simulations, 95% CI")) +
   theme_bw() +
   theme(panel.grid.minor = element_blank())
-
 ```
-
+To test the second hypothesis, we estimate a logit model of the violent tactic choice, according to the H2 model specification^[Initially, the model did not converge with the `bobyqa` optimizer. Following Bates et al. [-@bates2015lme4], we reestimate the model with all the available optimizers. Then, we pick the model with the highest log-likelihood vaue among the converged models. As a result of such reesimation, we use the converged model for simulating first differences.]. Given the binary independent variable, we calculated simulated first differences according to the observed value approach. Figure \@ref(fig:H2-analysis) shows the simulated first differences of a violent tactic choice between the shared ($\text{epr_highest_rank} == 1$) and concentrated ($\text{epr_highest_rank} == 0$) ethnic executive power configurations. The results clearly indicate that, despite a positive mean value of the first differences, there are no systematic and statistically significant differences between shared and concentrated ethnic executive power. It contrasts with theoretical expectations where ethnic power-sharing arrangements could push the dissidents towards one repertoire of contention over the other. 
 
 
 ```{r H2-confusion-matrix}
@@ -609,6 +619,7 @@ bind_rows(conf_df, metrics_df) %>%
   pack_rows("Performance Metrics", 3, 7)
 ```
 
+As well as with the model 1, we test the model fit using out-of-sample prediction.
 
 \subsection{Assumption Diagnostics}
 
